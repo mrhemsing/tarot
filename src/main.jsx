@@ -215,7 +215,7 @@ function App() {
   const [reading, setReading] = useState([]);
   const [revealedCount, setRevealedCount] = useState(0);
   const [ritualState, setRitualState] = useState('idle');
-  const [chargeText, setChargeText] = useState('Focus on a question, then press and hold the thumbprint.');
+  const [chargeText, setChargeText] = useState('Focus on a question, then press and hold the moon.');
   const [chargeProgress, setChargeProgress] = useState(0);
   const [flippedCards, setFlippedCards] = useState([false, false, false]);
   const timers = useRef([]);
@@ -267,7 +267,7 @@ function App() {
     setChargeProgress(0);
     setFlippedCards([false, false, false]);
     setRitualState('charging');
-    setChargeText('The thumbprint wakes the wheel… keep holding.');
+    setChargeText('The moon wakes the wheel… keep holding.');
     progressTimer.current = setInterval(() => {
       const progress = Math.min(1, (performance.now() - holdStart.current) / 5000);
       setChargeProgress(progress);
@@ -304,7 +304,7 @@ function App() {
       vibrate([10, 35, 10]);
       setRitualState('idle');
       setChargeProgress(0);
-      setChargeText('Hold the thumbprint for the full 5 seconds.');
+      setChargeText('Hold the moon for the full 5 seconds.');
       return;
     }
     clearTimers();
@@ -351,7 +351,7 @@ function App() {
         setReading([]);
         setRevealedCount(0);
         setRitualState('idle');
-        setChargeText('Focus on a question, then press and hold the thumbprint.');
+        setChargeText('Focus on a question, then press and hold the moon.');
       }, 820));
       return;
     }
@@ -360,10 +360,11 @@ function App() {
     setChargeProgress(0);
     setFlippedCards([false, false, false]);
     setRitualState('idle');
-    setChargeText('Focus on a question, then press and hold the thumbprint.');
+    setChargeText('Focus on a question, then press and hold the moon.');
   };
 
   const isRitualActive = ['charging', 'building', 'charged', 'collapse', 'selected', 'revealing', 'returning'].includes(ritualState);
+  const moonPhase = useMemo(() => getMoonPhase(), []);
   const flipCard = index => setFlippedCards(cards => cards.map((isFlipped, i) => i === index ? !isFlipped : isFlipped));
 
   return <main className={`app ${ritualState}`} onContextMenu={event => event.preventDefault()} onSelect={event => event.preventDefault()} onSelectStart={event => event.preventDefault()}>
@@ -374,9 +375,9 @@ function App() {
       {chargeText}
     </section>
 
-    <button className="thumbprint-cue" type="button" onPointerDown={beginCharge} onPointerUp={releaseCharge} onPointerCancel={releaseCharge} onPointerLeave={releaseCharge} aria-label="Hold thumbprint to cast cards">
-      <span className="thumbprint-rings" aria-hidden="true" />
-      <span className="thumbprint-label">{['charging', 'building', 'charged'].includes(ritualState) ? `${Math.round(chargeProgress * 100)}%` : 'Hold thumbprint'}</span>
+    <button className="thumbprint-cue moon-hold" type="button" onPointerDown={beginCharge} onPointerUp={releaseCharge} onPointerCancel={releaseCharge} onPointerLeave={releaseCharge} aria-label={`Hold current moon phase: ${moonPhase.name}`} title={`Current moon phase: ${moonPhase.name}`}>
+      <span className="moon-hold-orb" aria-hidden="true">{moonPhase.symbol}</span>
+      <span className="thumbprint-label">{['charging', 'building', 'charged'].includes(ritualState) ? `${Math.round(chargeProgress * 100)}%` : moonPhase.name}</span>
     </button>
 
     <section className="spread" aria-live="polite">
