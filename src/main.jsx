@@ -79,9 +79,9 @@ const positions = [
 ];
 
 const phrases = {
-  past: ['This card rises from the old water, showing the pattern that set the spell in motion.', 'Behind you, the well remembers a lesson that still hums under the surface.', 'The first marble carries an echo from the path already walked.'],
-  present: ['At the center of the wheel, this is the energy asking for your attention now.', 'The current moment glows around this card; it is the hinge of the reading.', 'This marble lands with the pulse of the present spell.'],
-  future: ['Ahead, this card is less a fixed prophecy than a lantern for the next turn.', 'The final marble reveals the shape the path may take if this energy is honored.', 'The well offers this as a possible doorway opening forward.']
+  past: ['This card rises from the old water, showing the pattern that set the spell in motion.', 'Behind you, the wheel remembers a lesson that still hums under the surface.', 'The first chosen card carries an echo from the path already walked.'],
+  present: ['At the center of the wheel, this is the energy asking for your attention now.', 'The current moment glows around this card; it is the hinge of the reading.', 'This card lands with the pulse of the present spell.'],
+  future: ['Ahead, this card is less a fixed prophecy than a lantern for the next turn.', 'The final card reveals the shape the path may take if this energy is honored.', 'The well offers this as a possible doorway opening forward.']
 };
 
 function pickReading() {
@@ -123,22 +123,22 @@ function buildDropOrder(reading) {
   return order;
 }
 
-function MarbleWheel({ reading, activeMarbleId, droppedIds, isCasting }) {
+function TarotWheel({ reading, activeCardId, drawnIds, isCasting }) {
   const selectedIds = new Set(reading.map(r => r.card.id));
   const moonPhase = useMemo(() => getMoonPhase(), []);
-  return <div className={`wheel-wrap ${isCasting ? 'casting' : ''}`} aria-label="Zoetrope wishing well with 78 tarot marbles dropping into the center one by one">
+  return <div className={`wheel-wrap ${isCasting ? 'casting' : ''}`} aria-label="Tarot wheel choosing cards one by one">
     <div className="aura" />
     <div className="wheel">
       {deck.map((card, index) => {
         const angle = (360 / deck.length) * index;
-        const isActive = card.id === activeMarbleId;
-        const isDropped = droppedIds.has(card.id);
+        const isActive = card.id === activeCardId;
+        const isDrawn = drawnIds.has(card.id);
         return <div
           key={card.id}
-          className={`marble ${selectedIds.has(card.id) ? 'selected' : ''} ${isDropped ? 'gone' : ''} ${isActive ? 'falling' : ''}`}
+          className={`card-slot ${selectedIds.has(card.id) ? 'selected' : ''} ${isDrawn ? 'drawn' : ''} ${isActive ? 'choosing' : ''}`}
           title={card.name}
-          style={{ '--angle': `${angle}deg`, '--delay': `${index * -0.035}s`, '--gem-hi': card.gemColors[0], '--gem-mid': card.gemColors[1], '--gem-core': card.gemColors[2], '--gem-shadow': card.gemColors[3], '--stone-shape': card.stoneShape, '--stone-size': `${card.stoneSize}px`, '--stone-scale-x': card.stoneScaleX, '--stone-scale-y': card.stoneScaleY, '--shine-x': `${card.shineX}%`, '--shine-y': `${card.shineY}%`, '--facet-turn': card.facetTurn }}
-        ><span>{card.sigil}</span></div>;
+          style={{ '--angle': `${angle}deg`, '--delay': `${index * -0.02}s` }}
+        />;
       })}
       <div className="well-mouth" title={`Current moon phase: ${moonPhase.name}`}>
         <span className="moon-symbol" aria-hidden="true">{moonPhase.symbol}</span>
@@ -170,9 +170,9 @@ function ReadingCard({ item, index, flipped, onFlip }) {
 
 function App() {
   const [reading, setReading] = useState([]);
-  const [activeMarbleId, setActiveMarbleId] = useState(null);
-  const [droppedIds, setDroppedIds] = useState(new Set());
-  const [fallenCount, setFallenCount] = useState(0);
+  const [activeCardId, setActiveCardId] = useState(null);
+  const [drawnIds, setDrawnIds] = useState(new Set());
+  const [drawnCount, setDrawnCount] = useState(0);
   const [revealedCount, setRevealedCount] = useState(0);
   const [phase, setPhase] = useState('idle');
   const [flippedCards, setFlippedCards] = useState([false, false, false]);
@@ -191,24 +191,24 @@ function App() {
     const duration = 8000 + Math.floor(Math.random() * 4001);
     const step = duration / dropOrder.length;
     setReading(next);
-    setActiveMarbleId(null);
-    setDroppedIds(new Set());
-    setFallenCount(0);
+    setActiveCardId(null);
+    setDrawnIds(new Set());
+    setDrawnCount(0);
     setRevealedCount(0);
     setFlippedCards([false, false, false]);
     setPhase('casting');
 
     dropOrder.forEach((cardId, index) => {
-      timers.current.push(setTimeout(() => setActiveMarbleId(cardId), index * step));
+      timers.current.push(setTimeout(() => setActiveCardId(cardId), index * step));
       timers.current.push(setTimeout(() => {
-        setDroppedIds(ids => new Set([...ids, cardId]));
-        setFallenCount(index + 1);
+        setDrawnIds(ids => new Set([...ids, cardId]));
+        setDrawnCount(index + 1);
         const selectedIndex = next.findIndex(item => item.card.id === cardId);
         if (selectedIndex >= 0) setRevealedCount(count => Math.max(count, selectedIndex + 1));
       }, index * step + Math.min(260, step * .72)));
     });
     timers.current.push(setTimeout(() => {
-      setActiveMarbleId(null);
+      setActiveCardId(null);
       setPhase('revealed');
     }, duration + 500));
   };
@@ -222,18 +222,18 @@ function App() {
     <section className="hero">
       <p className="eyebrow"><Sparkles size={16}/> AI Tarot Reading</p>
       <h1>Ask the Moonwell</h1>
-      <p className="lede">Seventy-eight enchanted marbles begin on the rim of the wishing well. One by one they drop into the Moonwell, revealing the chosen past, present, and future cards as they fall.</p>
-      <button onClick={cast} disabled={isCasting}>{isCasting ? <Sparkles size={18}/> : reading.length ? <RotateCcw size={18}/> : <Sparkles size={18}/>} {isCasting ? 'The marbles are spinning...' : reading.length ? 'Cast Again' : 'Cast the Reading'}</button>
+      <p className="lede">Seventy-eight tarot cards orbit the Moonwell. The wheel spins through the deck, choosing past, present, and future from the card slots themselves.</p>
+      <button onClick={cast} disabled={isCasting}>{isCasting ? <Sparkles size={18}/> : reading.length ? <RotateCcw size={18}/> : <Sparkles size={18}/>} {isCasting ? 'The wheel is choosing...' : reading.length ? 'Cast Again' : 'Cast the Reading'}</button>
     </section>
 
-    <MarbleWheel reading={reading} activeMarbleId={activeMarbleId} droppedIds={droppedIds} isCasting={isCasting} />
+    <TarotWheel reading={reading} activeCardId={activeCardId} drawnIds={drawnIds} isCasting={isCasting} />
 
     <section className="ritual-status" aria-live="polite">
-      {isCasting ? `${fallenCount}/78 marbles have dropped into the center. ${revealedCount}/3 cards revealed.` : isRevealed ? 'The Moonwell has spoken. Tap each card to reveal its message.' : 'Focus on a question, then cast the reading.'}
+      {isCasting ? `${drawnCount}/78 card slots have passed through the Moonwell. ${revealedCount}/3 cards revealed.` : isRevealed ? 'The Moonwell has spoken. Tap each card to reveal its message.' : 'Focus on a question, then cast the reading.'}
     </section>
 
     <section className="spread" aria-live="polite">
-      {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={flippedCards[i]} onFlip={() => flipCard(i)} /> : <div className="empty-card" key={p.key}><span>{i+1}</span><h3>{p.label}</h3><p>{isCasting ? 'Waiting for its marble to fall...' : p.prompt}</p></div>)}
+      {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={flippedCards[i]} onFlip={() => flipCard(i)} /> : <div className="empty-card" key={p.key}><span>{i+1}</span><h3>{p.label}</h3><p>{isCasting ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
     </section>
   </main>;
 }
