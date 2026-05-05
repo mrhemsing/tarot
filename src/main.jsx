@@ -375,6 +375,11 @@ function App() {
       {chargeText}
     </section>
 
+    <div className="thumbprint-cue" aria-hidden="true">
+      <span className="thumbprint-rings" />
+      <span className="thumbprint-label">Hold moonwell</span>
+    </div>
+
     <section className="spread" aria-live="polite">
       {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={flippedCards[i]} onFlip={() => flipCard(i)} /> : <div className="empty-card" key={p.key}><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
     </section>
