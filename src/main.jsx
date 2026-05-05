@@ -52,11 +52,11 @@ function pickReading() {
   return chosen.map((card, i) => ({ ...positions[i], card, line: phrases[positions[i].key][Math.floor(Math.random() * 3)] }));
 }
 
-function MarbleWheel({ reading, activeIndex, fallenCount, isCasting }) {
+function MarbleWheel({ reading, activeIndex, fallenCount, isCasting, spinTime }) {
   const visibleSelections = reading.slice(0, fallenCount).map(r => r.card.id);
   if (activeIndex >= 0 && reading[activeIndex]) visibleSelections.push(reading[activeIndex].card.id);
   const selectedIds = new Set(visibleSelections);
-  return <div className={`wheel-wrap ${isCasting ? 'casting' : ''}`} aria-label="Zoetrope wishing well with 78 tarot marbles">
+  return <div className={`wheel-wrap ${isCasting ? 'casting' : ''}`} style={{ '--spin-time': `${spinTime}ms` }} aria-label="Zoetrope wishing well with 78 tarot marbles spinning into the center">
     <div className="aura" />
     <div className="wheel">
       {deck.map((card, index) => {
@@ -67,7 +67,7 @@ function MarbleWheel({ reading, activeIndex, fallenCount, isCasting }) {
           key={card.id}
           className={`marble ${selectedIds.has(card.id) ? 'selected' : ''} ${isActive ? 'falling' : ''}`}
           title={card.name}
-          style={{ '--angle': `${angle}deg`, '--delay': `${index * -0.035}s` }}
+          style={{ '--angle': `${angle}deg`, '--delay': `${index * -0.035}s`, '--vortex-delay': `${(index % 13) * 0.035}s` }}
         ><span>{card.sigil}</span></div>;
       })}
       <div className="well-mouth"><Moon size={34}/><span>Moonwell</span></div>
@@ -90,6 +90,7 @@ function App() {
   const [activeIndex, setActiveIndex] = useState(-1);
   const [fallenCount, setFallenCount] = useState(0);
   const [phase, setPhase] = useState('idle');
+  const [spinTime, setSpinTime] = useState(10000);
   const timers = useRef([]);
   const seedStars = useMemo(() => Array.from({ length: 90 }, (_, i) => ({ left: Math.random()*100, top: Math.random()*100, delay: Math.random()*5, size: Math.random()*2+1, id: i })), []);
 
@@ -101,20 +102,21 @@ function App() {
   const cast = () => {
     clearTimers();
     const next = pickReading();
-    const spinTime = 8000 + Math.floor(Math.random() * 4001);
+    const nextSpinTime = 8000 + Math.floor(Math.random() * 4001);
+    setSpinTime(nextSpinTime);
     setReading(next);
     setActiveIndex(-1);
     setFallenCount(0);
     setPhase('casting');
 
     [0,1,2].forEach(i => {
-      timers.current.push(setTimeout(() => setActiveIndex(i), spinTime + i * 950));
-      timers.current.push(setTimeout(() => setFallenCount(i + 1), spinTime + 720 + i * 950));
+      timers.current.push(setTimeout(() => setActiveIndex(i), nextSpinTime + i * 950));
+      timers.current.push(setTimeout(() => setFallenCount(i + 1), nextSpinTime + 720 + i * 950));
     });
     timers.current.push(setTimeout(() => {
       setActiveIndex(-1);
       setPhase('revealed');
-    }, spinTime + 3600));
+    }, nextSpinTime + 3600));
   };
 
   const isCasting = phase === 'casting';
@@ -125,14 +127,14 @@ function App() {
     <section className="hero">
       <p className="eyebrow"><Sparkles size={16}/> AI Tarot Reading</p>
       <h1>Ask the Moonwell</h1>
-      <p className="lede">Seventy-eight enchanted marbles circle the wishing well. Let them spin until the Moonwell chooses three: past, present, and future.</p>
+      <p className="lede">Seventy-eight enchanted marbles circle the wishing well, spiraling down into the Moonwell until three are chosen: past, present, and future.</p>
       <button onClick={cast} disabled={isCasting}>{isCasting ? <Sparkles size={18}/> : reading.length ? <RotateCcw size={18}/> : <Sparkles size={18}/>} {isCasting ? 'The marbles are spinning...' : reading.length ? 'Cast Again' : 'Cast the Reading'}</button>
     </section>
 
-    <MarbleWheel reading={reading} activeIndex={activeIndex} fallenCount={fallenCount} isCasting={isCasting} />
+    <MarbleWheel reading={reading} activeIndex={activeIndex} fallenCount={fallenCount} isCasting={isCasting} spinTime={spinTime} />
 
     <section className="ritual-status" aria-live="polite">
-      {isCasting ? `The wheel is choosing... ${fallenCount}/3 marbles have fallen.` : isRevealed ? 'The Moonwell has spoken.' : 'Focus on a question, then cast the reading.'}
+      {isCasting ? fallenCount ? `The chosen marbles are surfacing... ${fallenCount}/3` : 'All 78 marbles are spiraling into the center...' : isRevealed ? 'The Moonwell has spoken.' : 'Focus on a question, then cast the reading.'}
     </section>
 
     <section className="spread" aria-live="polite">
