@@ -139,11 +139,10 @@ function getMoonPhase(date = new Date()) {
   return { ...phases[index], age: Math.round(age * 10) / 10 };
 }
 
-function TarotWheel({ reading, ritualState, chargeProgress, onCenterDown, onCenterUp }) {
+function TarotWheel({ reading, ritualState, chargeProgress }) {
   const selectedIds = new Set(reading.map(r => r.card.id));
-  const moonPhase = useMemo(() => getMoonPhase(), []);
   const isActiveRitual = ['charging', 'building', 'charged', 'collapse', 'selected', 'revealing', 'returning'].includes(ritualState);
-  return <div className={`wheel-wrap ${ritualState} ${isActiveRitual ? 'casting' : ''}`} style={{ '--charge': chargeProgress }} aria-label="Tarot wheel choosing three cards from the Moonwell">
+  return <div className={`wheel-wrap ${ritualState} ${isActiveRitual ? 'casting' : ''}`} style={{ '--charge': chargeProgress }} aria-label="Tarot wheel choosing three cards">
     <div className="aura" />
     <div className="wheel">
       {deck.map((card, index) => {
@@ -156,11 +155,7 @@ function TarotWheel({ reading, ritualState, chargeProgress, onCenterDown, onCent
           style={{ '--angle': `${angle}deg`, '--delay': `${index * -0.02}s` }}
         />;
       })}
-      <button className="well-mouth" title={`Current moon phase: ${moonPhase.name}`} onPointerDown={onCenterDown} onPointerUp={onCenterUp} onPointerCancel={onCenterUp} onPointerLeave={onCenterUp}>
-        <span className="charge-ring" aria-hidden="true" />
-        <span className="moon-symbol" aria-hidden="true">{moonPhase.symbol}</span>
-        <span className="moon-label">{['charging', 'building', 'charged'].includes(ritualState) ? `${Math.round(chargeProgress * 100)}%` : moonPhase.name.replace(' ', '\n')}</span>
-      </button>
+
     </div>
   </div>;
 }
@@ -220,7 +215,7 @@ function App() {
   const [reading, setReading] = useState([]);
   const [revealedCount, setRevealedCount] = useState(0);
   const [ritualState, setRitualState] = useState('idle');
-  const [chargeText, setChargeText] = useState('Focus on a question, then press and hold the Moonwell.');
+  const [chargeText, setChargeText] = useState('Focus on a question, then press and hold the thumbprint.');
   const [chargeProgress, setChargeProgress] = useState(0);
   const [flippedCards, setFlippedCards] = useState([false, false, false]);
   const timers = useRef([]);
@@ -272,7 +267,7 @@ function App() {
     setChargeProgress(0);
     setFlippedCards([false, false, false]);
     setRitualState('charging');
-    setChargeText('The Moonwell wakes… keep holding.');
+    setChargeText('The thumbprint wakes the wheel… keep holding.');
     progressTimer.current = setInterval(() => {
       const progress = Math.min(1, (performance.now() - holdStart.current) / 5000);
       setChargeProgress(progress);
@@ -309,7 +304,7 @@ function App() {
       vibrate([10, 35, 10]);
       setRitualState('idle');
       setChargeProgress(0);
-      setChargeText('Hold the center moon for the full 5 seconds.');
+      setChargeText('Hold the thumbprint for the full 5 seconds.');
       return;
     }
     clearTimers();
@@ -356,7 +351,7 @@ function App() {
         setReading([]);
         setRevealedCount(0);
         setRitualState('idle');
-        setChargeText('Focus on a question, then press and hold the Moonwell.');
+        setChargeText('Focus on a question, then press and hold the thumbprint.');
       }, 820));
       return;
     }
@@ -365,7 +360,7 @@ function App() {
     setChargeProgress(0);
     setFlippedCards([false, false, false]);
     setRitualState('idle');
-    setChargeText('Focus on a question, then press and hold the Moonwell.');
+    setChargeText('Focus on a question, then press and hold the thumbprint.');
   };
 
   const isRitualActive = ['charging', 'building', 'charged', 'collapse', 'selected', 'revealing', 'returning'].includes(ritualState);
@@ -373,16 +368,16 @@ function App() {
 
   return <main className={`app ${ritualState}`} onContextMenu={event => event.preventDefault()} onSelect={event => event.preventDefault()} onSelectStart={event => event.preventDefault()}>
     <div className="stars">{seedStars.map(s => <i key={s.id} style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}</div>
-    <TarotWheel reading={reading} ritualState={ritualState} chargeProgress={chargeProgress} onCenterDown={beginCharge} onCenterUp={releaseCharge} />
+    <TarotWheel reading={reading} ritualState={ritualState} chargeProgress={chargeProgress} />
 
     <section className="ritual-status" aria-live="polite">
       {chargeText}
     </section>
 
-    <div className="thumbprint-cue" aria-hidden="true">
-      <span className="thumbprint-rings" />
-      <span className="thumbprint-label">Hold moonwell</span>
-    </div>
+    <button className="thumbprint-cue" type="button" onPointerDown={beginCharge} onPointerUp={releaseCharge} onPointerCancel={releaseCharge} onPointerLeave={releaseCharge} aria-label="Hold thumbprint to cast cards">
+      <span className="thumbprint-rings" aria-hidden="true" />
+      <span className="thumbprint-label">{['charging', 'building', 'charged'].includes(ritualState) ? `${Math.round(chargeProgress * 100)}%` : 'Hold thumbprint'}</span>
+    </button>
 
     <section className="spread" aria-live="polite">
       {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={flippedCards[i]} onFlip={() => flipCard(i)} /> : <div className="empty-card" key={p.key}><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
