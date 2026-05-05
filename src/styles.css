@@ -22,7 +22,7 @@ body::before {
 }
 main { position: relative; width: 100vw; max-width: 100vw; min-width: 0; min-height: 100vh; padding: 0 20px 56px; overflow-x: hidden !important; overflow-y: visible; contain: paint; touch-action: manipulation; cursor: default; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 main.charging, main.building { cursor: grabbing; }
-main.building::after, main.charged::after, main.collapse::after, main.revealing::after { content: ''; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,.34)), repeating-conic-gradient(from 0deg, transparent 0 8deg, rgba(132,246,255,.08) 9deg 10deg, transparent 11deg 20deg); z-index: 8; mix-blend-mode: screen; opacity: .82; animation: action-vignette .38s linear infinite; }
+main.building::after, main.charged::after, main.collapse::after, main.revealing::after { content: ''; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 34%, transparent 18%, rgba(132,246,255,.08) 28%, transparent 38%, rgba(0,0,0,.3) 76%), repeating-radial-gradient(circle at 50% 34%, transparent 0 34px, rgba(132,246,255,.055) 35px 36px, transparent 37px 72px); z-index: 8; mix-blend-mode: screen; opacity: .7; animation: action-vignette .38s linear infinite; }
 .stars { position: fixed; inset: 0; pointer-events: none; z-index: -2; }
 .stars i { position: absolute; display: block; border-radius: 50%; background: #fff3b3; box-shadow: 0 0 12px #ffe9a8; animation: twinkle 4s infinite ease-in-out; }
 .hero { width: min(100%, 850px); max-width: 100%; margin: 0 auto 14px; text-align: center; }
@@ -127,17 +127,17 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
   main.charging, main.building, main.charged, main.collapse { animation: mobile-impact .22s linear infinite; }
   .spread { grid-template-columns: minmax(0, 1fr); width: calc(100vw - 28px); max-width: calc(100vw - 28px); margin-top: 24px; overflow-x: hidden; overflow-y: visible; }
   .charging .spread, .building .spread, .charged .spread, .collapse .spread { margin-top: 36px; filter: brightness(.78) blur(.35px); }
-  .charging .wheel-wrap { transform: scale(calc(1.08 + var(--charge) * .32)); margin-bottom: calc(18px + var(--charge) * 48px); z-index: 6; }
-  .building .wheel-wrap { transform: scale(calc(1.22 + var(--charge) * .42)); margin-bottom: calc(42px + var(--charge) * 76px); z-index: 6; }
-  .charged .wheel-wrap { transform: scale(1.72); margin-bottom: 98px; z-index: 6; filter: saturate(1.35) contrast(1.12); }
-  .collapse .wheel-wrap { transform: scale(1.9); margin-bottom: 112px; z-index: 6; filter: saturate(1.55) contrast(1.2); }
+  .charging .wheel-wrap { transform: scale(calc(1.08 + var(--charge) * .32)); margin-bottom: calc(80px + var(--charge) * 90px); z-index: 6; }
+  .building .wheel-wrap { transform: scale(calc(1.22 + var(--charge) * .42)); margin-bottom: calc(150px + var(--charge) * 125px); z-index: 6; }
+  .charged .wheel-wrap { transform: scale(1.72); margin-bottom: 300px; z-index: 6; filter: saturate(1.35) contrast(1.12); }
+  .collapse .wheel-wrap { transform: scale(1.9); margin-bottom: 340px; z-index: 6; filter: saturate(1.55) contrast(1.2); }
   .selected .wheel-wrap, .revealing .wheel-wrap { transform: scale(1.08); margin-bottom: 18px; }
   .charging .wheel, .building .wheel, .charged .wheel, .collapse .wheel { box-shadow: inset 0 0 58px rgba(0,0,0,.78), 0 0 44px rgba(255,240,167,.72), 0 0 120px rgba(132,246,255,.44), 0 0 210px rgba(198,105,255,.38); }
   .thumbprint-cue { position: relative; z-index: 3; display: grid; place-items: center; width: 104px; height: 128px; margin: -4px auto 4px; color: #fff0a7; pointer-events: none; transition: opacity .25s ease, transform .25s ease; }
   .thumbprint-rings { position: relative; display: block; width: 74px; height: 92px; border-radius: 46% 46% 50% 50% / 42% 42% 58% 58%; background: repeating-radial-gradient(ellipse at 50% 58%, transparent 0 5px, rgba(255,240,167,.72) 6px 7px, transparent 8px 12px); box-shadow: 0 0 18px rgba(255,240,167,.42), 0 0 44px rgba(132,246,255,.18); opacity: .82; animation: thumb-pulse 1.35s ease-in-out infinite; }
   .thumbprint-rings::before { content: ''; position: absolute; left: 16%; right: 16%; top: 12%; height: 4px; border-radius: 999px; background: linear-gradient(90deg, transparent, rgba(132,246,255,.95), transparent); box-shadow: 0 0 18px rgba(132,246,255,.8); animation: thumb-scan 1.2s ease-in-out infinite; }
   .thumbprint-label { margin-top: 7px; color: rgba(255,240,167,.84); font-size: .58rem; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; text-shadow: 0 0 10px rgba(255,240,167,.5); }
-  .charging .thumbprint-cue, .building .thumbprint-cue, .charged .thumbprint-cue { transform: scale(.88); opacity: .55; }
+  .charging .thumbprint-cue, .building .thumbprint-cue, .charged .thumbprint-cue { transform: scale(.88); opacity: .55; margin-bottom: 18px; }
   .collapse .thumbprint-cue, .selected .thumbprint-cue, .revealing .thumbprint-cue, .done .thumbprint-cue, .returning .thumbprint-cue { display: none; }
   .tarot-flip { width: 100%; max-width: 100%; margin-inline: auto; perspective: 900px; }
   .tarot-inner { width: 100%; max-width: 100%; }
