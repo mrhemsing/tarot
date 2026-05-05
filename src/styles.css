@@ -34,8 +34,8 @@ button { border: 0; cursor: pointer; display: inline-flex; align-items: center; 
 button:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.08); }
 button:disabled { cursor: wait; transform: none; filter: saturate(.75); opacity: .84; }
 
-.wheel-wrap { --wheel-top-pad: 34px; position: relative; width: min(calc(100vw - 48px), 660px); max-width: 100%; aspect-ratio: 1; margin: 0 auto 48px; display: grid; place-items: center; overflow: visible; contain: layout; padding-top: var(--wheel-top-pad); }
-.wheel-wrap::before { content: ''; position: absolute; left: 50%; top: 0; width: 100vw; height: calc(100% + 34px); transform: translateX(-50%); background: radial-gradient(circle at 50% 42%, rgba(255,226,151,.14), transparent 36%), linear-gradient(135deg, rgba(15, 37, 61, .82), rgba(69, 27, 92, .86)); z-index: -2; }
+.wheel-wrap { --wheel-top-pad: 34px; --wheel-size: min(calc(100vw - 48px), 660px); position: relative; width: var(--wheel-size); max-width: 100%; height: calc(var(--wheel-size) + var(--wheel-top-pad)); margin: 0 auto 14px; display: grid; place-items: center; overflow: visible; contain: layout; padding-top: var(--wheel-top-pad); }
+.wheel-wrap::before { content: ''; position: absolute; left: 50%; top: 0; width: 100vw; height: calc(100% + 18px); transform: translateX(-50%); background: radial-gradient(circle at 50% 42%, rgba(255,226,151,.14), transparent 36%), linear-gradient(135deg, rgba(15, 37, 61, .82), rgba(69, 27, 92, .86)); z-index: -2; }
 .aura { position: absolute; top: var(--wheel-top-pad); left: 1%; right: 1%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(255,226,151,.18), transparent 47%), conic-gradient(from 0deg, transparent, rgba(144, 255, 247, .16), transparent, rgba(255, 226, 120, .24), transparent, rgba(198, 105, 255, .18), transparent); filter: blur(18px); animation: spin 24s linear infinite reverse; }
 .wheel { position: absolute; top: var(--wheel-top-pad); left: 0; right: 0; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(5,3,9,.08) 0 20%, rgba(5,3,9,.32) 21% 36%, transparent 37%), url('/tarot-wheel.jpg') center / cover no-repeat; box-shadow: inset 0 0 58px rgba(0,0,0,.72), 0 0 70px rgba(255, 207, 126, .18), 0 0 120px rgba(78, 180, 255, .1); animation: spin 42s linear infinite; }
 .wheel::before { content: ''; position: absolute; inset: 29%; border-radius: 50%; background: radial-gradient(circle, rgba(0,0,0,.14), rgba(0,0,0,.025) 44%, transparent 64%); box-shadow: inset 0 0 42px rgba(0,0,0,.3); pointer-events: none; }
@@ -70,7 +70,7 @@ button:disabled { cursor: wait; transform: none; filter: saturate(.75); opacity:
 .charged .charge-ring { animation: activation-pulse .7s ease-in-out infinite; }
 .well-mouth .moon-symbol { display: block; font-size: clamp(1.8rem, 5vw, 3.3rem); line-height: 1; filter: drop-shadow(0 0 calc(12px + var(--charge) * 18px) rgba(255, 239, 184, .62)); transform: scale(calc(1 + var(--charge) * .12)); }
 .well-mouth .moon-label { display: block; max-width: 88%; color: #f8df9c; font-size: clamp(.45rem, 1.25vw, .72rem); font-weight: 800; letter-spacing: .1em; line-height: 1.15; text-align: center; text-transform: uppercase; text-shadow: 0 0 10px rgba(255, 226, 151, .35); white-space: pre-line; }
-.ritual-status { min-height: 28px; margin: 0 auto 18px; text-align: center; color: #fff0a7; font-family: Cinzel, serif; letter-spacing: .08em; text-transform: uppercase; font-size: .82rem; text-shadow: 0 0 18px rgba(255, 240, 167, .45); }
+.ritual-status { position: relative; z-index: 2; min-height: 28px; width: min(100%, 720px); margin: 0 auto 18px; text-align: center; color: #fff0a7; font-family: Cinzel, serif; letter-spacing: .08em; text-transform: uppercase; font-size: .82rem; line-height: 1.35; text-shadow: 0 0 18px rgba(255, 240, 167, .45); }
 
 .spread { width: min(calc(100vw - 40px), 1120px); max-width: calc(100vw - 40px); min-width: 0; margin: 0 auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; overflow-x: hidden; overflow-y: visible; contain: paint; }
 .empty-card { min-height: 255px; padding: 24px; border-radius: 28px; background: linear-gradient(160deg, rgba(255,255,255,.14), rgba(255,255,255,.045)); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(18px); box-shadow: 0 22px 70px rgba(0,0,0,.25); }
@@ -110,8 +110,9 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
   .tarot-inner { width: 100%; max-width: 100%; }
   .tarot-face { padding: 24px 18px; }
   .card-name { font-size: clamp(1.25rem, 7.6vw, 1.8rem); }
-  .wheel-wrap { --wheel-top-pad: 34px; width: min(calc(100vw - 56px), 470px); max-width: calc(100vw - 56px); margin: 0 auto 52px; padding-top: var(--wheel-top-pad); }
-  .wheel-wrap::before { height: calc(100% + 28px); }
+  .wheel-wrap { --wheel-top-pad: 34px; --wheel-size: min(calc(100vw - 56px), 470px); width: var(--wheel-size); max-width: calc(100vw - 56px); height: calc(var(--wheel-size) + var(--wheel-top-pad)); margin: 0 auto 12px; padding-top: var(--wheel-top-pad); }
+  .wheel-wrap::before { height: calc(100% + 18px); }
+  .ritual-status { width: calc(100vw - 28px); margin-bottom: 14px; font-size: .72rem; }
   .card-slot { --radius: clamp(96px, 29vw, 156px); height: 20px; }
   .selected .orbit-0, .revealing .orbit-0, .done .orbit-0 { transform: translate(-70px, 30px) rotate(-9deg); }
   .selected .orbit-2, .revealing .orbit-2, .done .orbit-2 { transform: translate(70px, 30px) rotate(9deg); }

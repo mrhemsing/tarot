@@ -323,6 +323,10 @@ function App() {
     <div className="stars">{seedStars.map(s => <i key={s.id} style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}</div>
     <TarotWheel reading={reading} ritualState={ritualState} chargeProgress={chargeProgress} onCenterDown={beginCharge} onCenterUp={releaseCharge} />
 
+    <section className="ritual-status" aria-live="polite">
+      {chargeText}
+    </section>
+
     {reading.length > 0 && <section className="hero compact"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><RotateCcw size={18}/> Cast Again</button></section>}
 
     <section className="spread" aria-live="polite">
