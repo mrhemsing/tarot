@@ -274,7 +274,7 @@ function App() {
   const isRitualActive = ['charging', 'building', 'collapse', 'selected', 'revealing'].includes(ritualState);
   const flipCard = index => setFlippedCards(cards => cards.map((isFlipped, i) => i === index ? !isFlipped : isFlipped));
 
-  return <main className={`app ${ritualState}`}>
+  return <main className={`app ${ritualState}`} onContextMenu={event => event.preventDefault()}>
     <div className="stars">{seedStars.map(s => <i key={s.id} style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}</div>
     <section className="hero">
       <p className="eyebrow"><Sparkles size={16}/> AI Tarot Reading</p>
