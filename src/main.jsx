@@ -150,9 +150,6 @@ function TarotWheel({ reading, ritualState, chargeProgress, onCenterDown, onCent
           style={{ '--angle': `${angle}deg`, '--delay': `${index * -0.02}s` }}
         />;
       })}
-      {reading.map((item, index) => <div key={item.key} className={`orbit-lock orbit-${index}`}>
-        <span>{item.label}</span>
-      </div>)}
       <button className="well-mouth" title={`Current moon phase: ${moonPhase.name}`} onPointerDown={onCenterDown} onPointerUp={onCenterUp} onPointerCancel={onCenterUp} onPointerLeave={onCenterUp}>
         <span className="charge-ring" aria-hidden="true" />
         <span className="moon-symbol" aria-hidden="true">{moonPhase.symbol}</span>
