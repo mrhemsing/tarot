@@ -58,6 +58,12 @@ const withGem = card => {
   };
 };
 
+const suitImageCodes = { Pentacles: 'P', Wands: 'W', Cups: 'C', Swords: 'S' };
+const rankImageCodes = ['0A', '02', '03', '04', '05', '06', '07', '08', '09', '10', 'J1', 'J2', 'QU', 'KI'];
+const rwsImageFor = card => card.id < 22
+  ? `/rws/sm_RWSa-T-${String(card.id).padStart(2, '0')}.webp`
+  : `/rws/sm_RWSa-${suitImageCodes[card.arcana]}-${rankImageCodes[(card.id - 22) % 14]}.webp`;
+
 const deck = [
   ...major.map(([name, meaning], i) => withGem({ id: i, name, arcana: 'Major Arcana', sigil: '✦', meaning })),
   ...Object.entries(suits).flatMap(([suit, [element, domain]], suitIndex) =>
@@ -70,7 +76,7 @@ const deck = [
       element
     }))
   )
-];
+].map(card => ({ ...card, image: rwsImageFor(card) }));
 
 const positions = [
   { key: 'past', label: 'Past', prompt: 'what shaped the path behind you' },
@@ -162,11 +168,9 @@ function TarotWheel({ reading, ritualState, chargeProgress, onCenterDown, onCent
 function ReadingCard({ item, index, flipped, onFlip }) {
   return <button className={`tarot-flip ${flipped ? 'is-flipped' : ''}`} style={{ '--i': index }} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={onFlip} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
     <span className="tarot-inner">
-      <span className="tarot-face tarot-front">
+      <span className="tarot-face tarot-front art-front">
         <span className="position">{item.label}</span>
-        <span className="card-sigil">{item.card.sigil}</span>
-        <span className="card-name">{item.card.name}</span>
-        <span className="arcana">{item.card.arcana}{item.card.element ? ` · ${item.card.element}` : ''}</span>
+        <img className="rws-card-art" src={item.card.image} alt={item.card.name} draggable="false" />
         <span className="tap-hint">Tap to reveal</span>
       </span>
       <span className="tarot-face tarot-back">

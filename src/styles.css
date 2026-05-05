@@ -80,8 +80,10 @@ button:disabled { cursor: wait; transform: none; filter: saturate(.75); opacity:
 .tarot-flip.is-flipped .tarot-inner { transform: rotateY(180deg); }
 .tarot-face { position: absolute; inset: 0; width: 100%; max-width: 100%; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 28px; border-radius: 28px; overflow: hidden; backface-visibility: hidden; border: 1px solid rgba(255,255,255,.22); box-shadow: 0 22px 70px rgba(0,0,0,.32), inset 0 0 0 1px rgba(255,255,255,.08); contain: paint; }
 .tarot-face::before { content: ''; position: absolute; inset: 13px; border: 1px solid rgba(255, 240, 167, .42); border-radius: 20px; pointer-events: none; }
-.tarot-front { background: radial-gradient(circle at 50% 28%, rgba(255,240,167,.28), transparent 28%), linear-gradient(145deg, #251035, #080512 58%, #311144); }
-.tarot-front::after { content: ''; position: absolute; width: 190px; height: 190px; border-radius: 50%; border: 1px dashed rgba(255, 240, 167, .42); box-shadow: 0 0 40px rgba(200, 114, 255, .25); animation: spin 24s linear infinite; }
+.tarot-front { background: radial-gradient(circle at 50% 28%, rgba(255,240,167,.22), transparent 28%), linear-gradient(145deg, #251035, #080512 58%, #311144); }
+.tarot-front::after { content: ''; position: absolute; width: 190px; height: 190px; border-radius: 50%; border: 1px dashed rgba(255, 240, 167, .28); box-shadow: 0 0 40px rgba(200, 114, 255, .2); animation: spin 24s linear infinite; }
+.art-front { gap: 10px; justify-content: space-between; }
+.rws-card-art { position: relative; z-index: 1; display: block; width: min(78%, 220px); max-height: 72%; object-fit: contain; border-radius: 8px; box-shadow: 0 16px 34px rgba(0,0,0,.38), 0 0 0 1px rgba(255,240,167,.28); background: #f7ecd2; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .tarot-back { align-items: flex-start; justify-content: flex-start; text-align: left; background: linear-gradient(160deg, rgba(255,255,255,.16), rgba(255,255,255,.055)), radial-gradient(circle at top right, rgba(132,246,255,.22), transparent 45%), #15091f; transform: rotateY(180deg); }
 .position { position: relative; z-index: 1; width: fit-content; margin-bottom: 8px; padding: 6px 10px; border-radius: 999px; color: #20102c; background: #fff0a7; font-weight: 900; text-transform: uppercase; font-size: .75rem; letter-spacing: .1em; }
 h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #fff7d6; }
@@ -109,6 +111,7 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
   .tarot-flip { width: 100%; max-width: 100%; margin-inline: auto; perspective: 900px; }
   .tarot-inner { width: 100%; max-width: 100%; }
   .tarot-face { padding: 24px 18px; }
+  .rws-card-art { width: min(82%, 230px); max-height: 74%; }
   .card-name { font-size: clamp(1.25rem, 7.6vw, 1.8rem); }
   .wheel-wrap { --wheel-top-pad: 34px; --wheel-size: min(calc(100vw - 56px), 470px); width: var(--wheel-size); max-width: calc(100vw - 56px); height: calc(var(--wheel-size) + var(--wheel-top-pad)); margin: 0 auto 12px; padding-top: var(--wheel-top-pad); }
   .wheel-wrap::before { height: calc(100% + 18px); }
