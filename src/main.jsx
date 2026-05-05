@@ -84,14 +84,34 @@ const phrases = {
   future: ['Ahead, this card is less a fixed prophecy than a lantern for the next turn.', 'The final card reveals the shape the path may take if this energy is honored.', 'The well offers this as a possible doorway opening forward.']
 };
 
-function pickReading() {
+function hashSeed(input) {
+  let hash = 2166136261;
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function seededRandom(seed) {
+  return () => {
+    seed += 0x6D2B79F5;
+    let t = seed;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function pickReading(seedInput = String(Date.now())) {
+  const random = seededRandom(hashSeed(seedInput));
   const chosen = [];
   const available = [...deck];
   while (chosen.length < 3) {
-    const index = Math.floor(Math.random() * available.length);
+    const index = Math.floor(random() * available.length);
     chosen.push(available.splice(index, 1)[0]);
   }
-  return chosen.map((card, i) => ({ ...positions[i], card, line: phrases[positions[i].key][Math.floor(Math.random() * 3)] }));
+  return chosen.map((card, i) => ({ ...positions[i], card, line: phrases[positions[i].key][Math.floor(random() * 3)] }));
 }
 
 function getMoonPhase(date = new Date()) {
@@ -113,33 +133,26 @@ function getMoonPhase(date = new Date()) {
   return { ...phases[index], age: Math.round(age * 10) / 10 };
 }
 
-function buildDropOrder(reading) {
-  const selected = reading.map(r => r.card.id);
-  const selectedSet = new Set(selected);
-  const others = deck.map(card => card.id).filter(id => !selectedSet.has(id)).sort(() => Math.random() - 0.5);
-  const order = [...others];
-  const revealSlots = [18, 43, 68].map(slot => slot + Math.floor(Math.random() * 8));
-  selected.forEach((id, index) => order.splice(Math.min(revealSlots[index], order.length), 0, id));
-  return order;
-}
-
-function TarotWheel({ reading, activeCardId, drawnIds, isCasting }) {
+function TarotWheel({ reading, ritualState }) {
   const selectedIds = new Set(reading.map(r => r.card.id));
   const moonPhase = useMemo(() => getMoonPhase(), []);
-  return <div className={`wheel-wrap ${isCasting ? 'casting' : ''}`} aria-label="Tarot wheel choosing cards one by one">
+  const isActiveRitual = ['charging', 'building', 'collapse', 'selected', 'revealing'].includes(ritualState);
+  return <div className={`wheel-wrap ${ritualState} ${isActiveRitual ? 'casting' : ''}`} aria-label="Tarot wheel choosing three cards from the Moonwell">
     <div className="aura" />
     <div className="wheel">
       {deck.map((card, index) => {
         const angle = (360 / deck.length) * index;
-        const isActive = card.id === activeCardId;
-        const isDrawn = drawnIds.has(card.id);
+        const isSelected = selectedIds.has(card.id);
         return <div
           key={card.id}
-          className={`card-slot ${selectedIds.has(card.id) ? 'selected' : ''} ${isDrawn ? 'drawn' : ''} ${isActive ? 'choosing' : ''}`}
+          className={`card-slot ${isSelected ? 'selected' : ''}`}
           title={card.name}
           style={{ '--angle': `${angle}deg`, '--delay': `${index * -0.02}s` }}
         />;
       })}
+      {reading.map((item, index) => <div key={item.key} className={`orbit-lock orbit-${index}`}>
+        <span>{item.label}</span>
+      </div>)}
       <div className="well-mouth" title={`Current moon phase: ${moonPhase.name}`}>
         <span className="moon-symbol" aria-hidden="true">{moonPhase.symbol}</span>
         <span className="moon-label">{moonPhase.name.replace(' ', '\n')}</span>
@@ -149,7 +162,7 @@ function TarotWheel({ reading, activeCardId, drawnIds, isCasting }) {
 }
 
 function ReadingCard({ item, index, flipped, onFlip }) {
-  return <button className={`tarot-flip ${flipped ? 'is-flipped' : ''}`} style={{ '--i': index }} onClick={onFlip} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
+  return <button className={`tarot-flip ${flipped ? 'is-flipped' : ''}`} style={{ '--i': index }} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={onFlip} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
     <span className="tarot-inner">
       <span className="tarot-face tarot-front">
         <span className="position">{item.label}</span>
@@ -170,66 +183,89 @@ function ReadingCard({ item, index, flipped, onFlip }) {
 
 function App() {
   const [reading, setReading] = useState([]);
-  const [activeCardId, setActiveCardId] = useState(null);
-  const [drawnIds, setDrawnIds] = useState(new Set());
-  const [drawnCount, setDrawnCount] = useState(0);
   const [revealedCount, setRevealedCount] = useState(0);
-  const [phase, setPhase] = useState('idle');
+  const [ritualState, setRitualState] = useState('idle');
+  const [chargeText, setChargeText] = useState('Focus on a question, then press and hold the Moonwell.');
   const [flippedCards, setFlippedCards] = useState([false, false, false]);
   const timers = useRef([]);
-  const seedStars = useMemo(() => Array.from({ length: 90 }, (_, i) => ({ left: Math.random()*100, top: Math.random()*100, delay: Math.random()*5, size: Math.random()*2+1, id: i })), []);
+  const holdStart = useRef(0);
+  const pointerSeed = useRef({ x: 0, y: 0 });
+  const seedStars = useMemo(() => Array.from({ length: 120 }, (_, i) => ({ left: Math.random()*100, top: Math.random()*100, delay: Math.random()*5, size: Math.random()*2+1, id: i })), []);
 
   const clearTimers = () => {
     timers.current.forEach(clearTimeout);
     timers.current = [];
   };
 
-  const cast = () => {
+  const beginCharge = event => {
+    if (['charging', 'building', 'collapse', 'selected', 'revealing'].includes(ritualState)) return;
     clearTimers();
-    const next = pickReading();
-    const dropOrder = buildDropOrder(next);
-    const duration = 8000 + Math.floor(Math.random() * 4001);
-    const step = duration / dropOrder.length;
-    setReading(next);
-    setActiveCardId(null);
-    setDrawnIds(new Set());
-    setDrawnCount(0);
+    holdStart.current = performance.now();
+    pointerSeed.current = { x: Math.round(event.clientX || 0), y: Math.round(event.clientY || 0) };
+    setReading([]);
     setRevealedCount(0);
     setFlippedCards([false, false, false]);
-    setPhase('casting');
-
-    dropOrder.forEach((cardId, index) => {
-      timers.current.push(setTimeout(() => setActiveCardId(cardId), index * step));
-      timers.current.push(setTimeout(() => {
-        setDrawnIds(ids => new Set([...ids, cardId]));
-        setDrawnCount(index + 1);
-        const selectedIndex = next.findIndex(item => item.card.id === cardId);
-        if (selectedIndex >= 0) setRevealedCount(count => Math.max(count, selectedIndex + 1));
-      }, index * step + Math.min(260, step * .72)));
-    });
+    setRitualState('charging');
+    setChargeText('Focus your intention…');
     timers.current.push(setTimeout(() => {
-      setActiveCardId(null);
-      setPhase('revealed');
-    }, duration + 500));
+      setRitualState(state => state === 'charging' ? 'building' : state);
+      setChargeText('The well is listening… release when ready.');
+    }, 1800));
   };
 
-  const isCasting = phase === 'casting';
-  const isRevealed = phase === 'revealed';
+  const releaseCharge = event => {
+    if (!['charging', 'building'].includes(ritualState)) return;
+    clearTimers();
+    const holdDuration = Math.max(800, Math.round(performance.now() - holdStart.current));
+    const x = Math.round(event.clientX || pointerSeed.current.x);
+    const y = Math.round(event.clientY || pointerSeed.current.y);
+    const next = pickReading(`${holdDuration}:${x}:${y}:${Date.now()}`);
+    setReading(next);
+    setRitualState('collapse');
+    setChargeText('The wheel collapses into your chosen path…');
+
+    timers.current.push(setTimeout(() => {
+      setRitualState('selected');
+      setChargeText('Past, Present, and Future have locked into orbit.');
+    }, 650));
+    timers.current.push(setTimeout(() => {
+      setRitualState('revealing');
+      setChargeText('The cards are revealing…');
+    }, 1450));
+    [400, 1100, 2000].forEach((delay, index) => {
+      timers.current.push(setTimeout(() => setRevealedCount(index + 1), 1450 + delay));
+    });
+    timers.current.push(setTimeout(() => {
+      setRitualState('done');
+      setChargeText('Your path has been revealed. Tap each card to read it.');
+    }, 3900));
+  };
+
+  const resetRitual = () => {
+    clearTimers();
+    setReading([]);
+    setRevealedCount(0);
+    setFlippedCards([false, false, false]);
+    setRitualState('idle');
+    setChargeText('Focus on a question, then press and hold the Moonwell.');
+  };
+
+  const isRitualActive = ['charging', 'building', 'collapse', 'selected', 'revealing'].includes(ritualState);
   const flipCard = index => setFlippedCards(cards => cards.map((isFlipped, i) => i === index ? !isFlipped : isFlipped));
 
-  return <main>
+  return <main className={`app ${ritualState}`} onPointerDown={beginCharge} onPointerUp={releaseCharge} onPointerCancel={releaseCharge} onPointerLeave={releaseCharge}>
     <div className="stars">{seedStars.map(s => <i key={s.id} style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}</div>
     <section className="hero">
       <p className="eyebrow"><Sparkles size={16}/> AI Tarot Reading</p>
       <h1>Ask the Moonwell</h1>
-      <p className="lede">Seventy-eight tarot cards orbit the Moonwell. The wheel spins through the deck, choosing past, present, and future from the card slots themselves.</p>
-      <button onClick={cast} disabled={isCasting}>{isCasting ? <Sparkles size={18}/> : reading.length ? <RotateCcw size={18}/> : <Sparkles size={18}/>} {isCasting ? 'The wheel is choosing...' : reading.length ? 'Cast Again' : 'Cast the Reading'}</button>
+      <p className="lede">Press and hold to charge the Moonwell. Release when your intention feels ready, and three cards will be pulled from the wheel.</p>
+      <button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}>{reading.length ? <RotateCcw size={18}/> : <Sparkles size={18}/>} {reading.length ? 'Cast Again' : 'Hold Anywhere to Begin'}</button>
     </section>
 
-    <TarotWheel reading={reading} activeCardId={activeCardId} drawnIds={drawnIds} isCasting={isCasting} />
+    <TarotWheel reading={reading} ritualState={ritualState} />
 
     <section className="ritual-status" aria-live="polite">
-      {isCasting ? `${drawnCount}/78 card slots have passed through the Moonwell. ${revealedCount}/3 cards revealed.` : isRevealed ? 'The Moonwell has spoken. Tap each card to reveal its message.' : 'Focus on a question, then cast the reading.'}
+      {chargeText}
     </section>
 
     <section className="spread" aria-live="polite">
