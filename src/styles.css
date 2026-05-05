@@ -21,7 +21,7 @@ body::before {
 }
 main { position: relative; min-height: 100vh; padding: 42px 20px 56px; touch-action: manipulation; cursor: crosshair; }
 main.done, main.idle { cursor: default; }
-main.building::after, main.collapse::after, main.revealing::after { content: ''; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(circle at center, transparent 36%, rgba(0,0,0,.34)); z-index: -1; }
+main.building::after, main.collapse::after, main.revealing::after { content: ''; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(circle at center, transparent 36%, rgba(0,0,0,.24)); z-index: -1; }
 .stars { position: fixed; inset: 0; pointer-events: none; z-index: -2; }
 .stars i { position: absolute; display: block; border-radius: 50%; background: #fff3b3; box-shadow: 0 0 12px #ffe9a8; animation: twinkle 4s infinite ease-in-out; }
 .hero { max-width: 850px; margin: 0 auto 20px; text-align: center; }
@@ -39,16 +39,16 @@ button:disabled { cursor: wait; transform: none; filter: saturate(.75); opacity:
 .charging .aura { animation-duration: 10s; filter: blur(24px) brightness(1.28); }
 .building .aura { animation-duration: 5.8s; filter: blur(28px) brightness(1.55); }
 .collapse .aura, .selected .aura, .revealing .aura { animation-duration: 4.8s; filter: blur(30px) brightness(1.7); }
-.charging .wheel { animation-duration: 28s; box-shadow: inset 0 0 68px rgba(0,0,0,.68), 0 0 90px rgba(255, 207, 126, .22), 0 0 140px rgba(78, 180, 255, .15); }
-.building .wheel { animation-duration: 16s; box-shadow: inset 0 0 72px rgba(0,0,0,.72), 0 0 110px rgba(255, 207, 126, .28), 0 0 170px rgba(78, 180, 255, .2); }
+.charging .wheel { animation-duration: 32s; box-shadow: inset 0 0 68px rgba(0,0,0,.68), 0 0 90px rgba(255, 207, 126, .22), 0 0 140px rgba(78, 180, 255, .15); }
+.building .wheel { animation-duration: 22s; box-shadow: inset 0 0 72px rgba(0,0,0,.72), 0 0 110px rgba(255, 207, 126, .28), 0 0 170px rgba(78, 180, 255, .2); }
 .collapse .wheel, .selected .wheel, .revealing .wheel, .done .wheel { animation-play-state: paused; }
 .wheel::after { content: ''; position: absolute; inset: 39%; border-radius: 50%; border: 1px solid rgba(255, 218, 139, .42); box-shadow: 0 0 30px rgba(255, 218, 139, .16); pointer-events: none; }
 .card-slot { --radius: clamp(126px, 24vw, 202px); position: absolute; left: 50%; top: 50%; width: 2px; height: clamp(20px, 4.4vw, 35px); margin-left: -1px; margin-top: calc(clamp(20px, 4.4vw, 35px) / -2); border-radius: 999px; transform: rotate(var(--angle)) translateY(calc(var(--radius) * -1)); transform-origin: 50% calc(var(--radius) + 50%); background: linear-gradient(to bottom, transparent, rgba(255, 232, 159, .28), transparent); opacity: .22; box-shadow: 0 0 8px rgba(255, 221, 139, .08); animation: slot-breathe 3.2s ease-in-out infinite var(--delay); transition: opacity .45s ease, transform .65s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease, width .35s ease; }
 .building .card-slot { transform: rotate(var(--angle)) translateY(calc(var(--radius) * -0.965)) rotateX(2deg); opacity: .34; }
 .collapse .card-slot:not(.selected), .selected .card-slot:not(.selected), .revealing .card-slot:not(.selected), .done .card-slot:not(.selected) { opacity: .08; animation: none; }
 .card-slot.selected { opacity: .98; width: 5px; margin-left: -2.5px; background: linear-gradient(to bottom, transparent, #fff4b8 18%, #84f6ff 52%, #d8a5ff 84%, transparent); box-shadow: 0 0 20px rgba(255, 241, 184, .9), 0 0 38px rgba(132, 246, 255, .5); z-index: 4; }
-.collapse .card-slot.selected { transform: rotate(var(--angle)) translateY(-54px) scaleY(1.45); }
-.selected .card-slot.selected, .revealing .card-slot.selected, .done .card-slot.selected { transform: rotate(var(--angle)) translateY(-72px) scaleY(.9); opacity: .35; }
+.collapse .card-slot.selected { transform: rotate(var(--angle)) translateY(calc(var(--radius) * -0.45)) scaleY(1.35); animation: chosen-hesitate .85s cubic-bezier(.2,.8,.2,1) both; }
+.selected .card-slot.selected, .revealing .card-slot.selected, .done .card-slot.selected { transform: rotate(var(--angle)) translateY(-76px) scaleY(.9); opacity: .35; }
 .orbit-lock { position: absolute; left: 50%; top: 50%; display: grid; place-items: center; width: 72px; height: 96px; margin: -48px 0 0 -36px; border: 1px solid rgba(255, 240, 167, .48); border-radius: 12px; color: #fff4bd; background: linear-gradient(160deg, rgba(255,255,255,.12), rgba(255,255,255,.035)); box-shadow: 0 0 28px rgba(255, 226, 151, .22); opacity: 0; transform: scale(.35); transition: opacity .45s ease, transform .65s cubic-bezier(.2,.8,.2,1); pointer-events: none; z-index: 5; }
 .orbit-lock span { font-size: .6rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
 .selected .orbit-lock, .revealing .orbit-lock, .done .orbit-lock { opacity: 1; animation: orbit-hover 3.8s ease-in-out infinite; }
@@ -85,6 +85,7 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes slot-breathe { 50% { opacity: .42; filter: brightness(1.25); } }
 @keyframes orbit-hover { 50% { filter: brightness(1.18); box-shadow: 0 0 40px rgba(255, 226, 151, .34); } }
+@keyframes chosen-hesitate { 0% { filter: brightness(1); } 42% { transform: rotate(var(--angle)) translateY(calc(var(--radius) * -0.86)) scaleY(1.05); filter: brightness(1.8); } 100% { transform: rotate(var(--angle)) translateY(calc(var(--radius) * -0.45)) scaleY(1.35); filter: brightness(1.2); } }
 @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes twinkle { 0%,100% { opacity: .2; transform: scale(.7); } 50% { opacity: 1; transform: scale(1.3); } }
 

@@ -197,20 +197,26 @@ function App() {
     timers.current = [];
   };
 
+  const vibrate = pattern => {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(pattern);
+  };
+
   const beginCharge = event => {
     if (['charging', 'building', 'collapse', 'selected', 'revealing'].includes(ritualState)) return;
     clearTimers();
+    vibrate(18);
     holdStart.current = performance.now();
     pointerSeed.current = { x: Math.round(event.clientX || 0), y: Math.round(event.clientY || 0) };
     setReading([]);
     setRevealedCount(0);
     setFlippedCards([false, false, false]);
     setRitualState('charging');
-    setChargeText('Focus your intention…');
+    setChargeText('Hold to build energy…');
     timers.current.push(setTimeout(() => {
       setRitualState(state => state === 'charging' ? 'building' : state);
-      setChargeText('The well is listening… release when ready.');
-    }, 1800));
+      setChargeText('Release to let gravity choose.');
+      vibrate([12, 45, 18]);
+    }, 1200));
   };
 
   const releaseCharge = event => {
@@ -220,25 +226,30 @@ function App() {
     const x = Math.round(event.clientX || pointerSeed.current.x);
     const y = Math.round(event.clientY || pointerSeed.current.y);
     const next = pickReading(`${holdDuration}:${x}:${y}:${Date.now()}`);
+    vibrate([30, 55, 45]);
     setReading(next);
     setRitualState('collapse');
-    setChargeText('The wheel collapses into your chosen path…');
+    setChargeText('Three cards hesitate… then fall inward.');
 
     timers.current.push(setTimeout(() => {
       setRitualState('selected');
-      setChargeText('Past, Present, and Future have locked into orbit.');
-    }, 650));
+      setChargeText('Gravity has selected your three cards.');
+      vibrate(25);
+    }, 850));
     timers.current.push(setTimeout(() => {
       setRitualState('revealing');
-      setChargeText('The cards are revealing…');
-    }, 1450));
-    [400, 1100, 2000].forEach((delay, index) => {
-      timers.current.push(setTimeout(() => setRevealedCount(index + 1), 1450 + delay));
+      setChargeText('Your path is opening…');
+    }, 1400));
+    [350, 850, 1450].forEach((delay, index) => {
+      timers.current.push(setTimeout(() => {
+        setRevealedCount(index + 1);
+        vibrate(index === 2 ? [18, 35, 28] : 16);
+      }, 1400 + delay));
     });
     timers.current.push(setTimeout(() => {
       setRitualState('done');
       setChargeText('Your path has been revealed. Tap each card to read it.');
-    }, 3900));
+    }, 3300));
   };
 
   const resetRitual = () => {
@@ -258,7 +269,7 @@ function App() {
     <section className="hero">
       <p className="eyebrow"><Sparkles size={16}/> AI Tarot Reading</p>
       <h1>Ask the Moonwell</h1>
-      <p className="lede">Press and hold to charge the Moonwell. Release when your intention feels ready, and three cards will be pulled from the wheel.</p>
+      <p className="lede">Hold your finger down to charge the Moonwell. Release, and gravity pulls three cards inward from the orbiting deck.</p>
       <button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}>{reading.length ? <RotateCcw size={18}/> : <Sparkles size={18}/>} {reading.length ? 'Cast Again' : 'Hold Anywhere to Begin'}</button>
     </section>
 
