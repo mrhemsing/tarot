@@ -187,6 +187,10 @@ function cardAnalysis(item) {
 function ReadingCard({ item, index, flipped, onFlip }) {
   const analysis = cardAnalysis(item);
   const handleClick = event => {
+    if (event.target.closest('.flip-control')) {
+      onFlip();
+      return;
+    }
     if (event.target.closest('.card-scroll')) return;
     onFlip();
   };
