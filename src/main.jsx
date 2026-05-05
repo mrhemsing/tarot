@@ -165,8 +165,32 @@ function TarotWheel({ reading, ritualState, chargeProgress, onCenterDown, onCent
   </div>;
 }
 
+function cardAnalysis(item) {
+  const { card, label, prompt } = item;
+  const isMajor = card.arcana === 'Major Arcana';
+  const positionLens = {
+    Past: 'In the past position, this points to the root condition: the older choice, wound, lesson, or momentum that shaped the question before it reached today.',
+    Present: 'In the present position, this describes the living pressure of the moment: what needs attention, what is asking to be named, and where your agency is strongest right now.',
+    Future: 'In the future position, this is not a fixed prediction. It is the likely doorway opening next if the current energy continues, and the guidance for walking through it cleanly.'
+  }[label];
+  const scale = isMajor
+    ? 'Because this is a Major Arcana card, read it as a larger soul-pattern rather than a minor passing mood. It usually speaks to timing, identity, transformation, or a lesson that wants integration.'
+    : `Because this is a ${card.arcana} card, read it through the element of ${card.element}: ${card.arcana === 'Wands' ? 'desire, creative fire, instinct, confidence, and action' : card.arcana === 'Cups' ? 'emotion, relationship, intuition, memory, and tenderness' : card.arcana === 'Swords' ? 'thought, truth, conflict, communication, and mental clarity' : 'the body, money, labor, stability, home, and practical results'}.`;
+  return [
+    `${card.name} carries the theme of ${card.meaning}. ${positionLens}`,
+    scale,
+    `For “${prompt},” the card suggests looking at where ${card.meaning.split(',')[0]} is already active. The message is less about forcing an outcome and more about noticing the pattern clearly enough to choose your next move with intention.`,
+    `A grounded way to work with it: name what is real, release the part that is only fear or habit, then take one small action that honors the card’s strongest medicine.`
+  ];
+}
+
 function ReadingCard({ item, index, flipped, onFlip }) {
-  return <button className={`tarot-flip ${flipped ? 'is-flipped' : ''}`} style={{ '--i': index }} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={onFlip} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
+  const analysis = cardAnalysis(item);
+  const handleClick = event => {
+    if (event.target.closest('.card-scroll')) return;
+    onFlip();
+  };
+  return <button className={`tarot-flip ${flipped ? 'is-flipped' : ''}`} style={{ '--i': index }} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={handleClick} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
     <span className="tarot-inner">
       <span className="tarot-face tarot-front art-front">
         <span className="position">{item.label}</span>
@@ -174,10 +198,15 @@ function ReadingCard({ item, index, flipped, onFlip }) {
         <span className="tap-hint">Tap to reveal</span>
       </span>
       <span className="tarot-face tarot-back">
-        <span className="position">{item.label}</span>
-        <span className="card-name">{item.card.name}</span>
-        <span className="reading-line">{item.line}</span>
-        <span className="meaning"><strong>Oracle:</strong> {item.card.meaning}.</span>
+        <span className="card-scroll">
+          <span className="position">{item.label}</span>
+          <span className="card-name">{item.card.name}</span>
+          <span className="reading-line">{item.line}</span>
+          <span className="analysis-label">ChatGPT-style analysis</span>
+          {analysis.map((paragraph, paragraphIndex) => <span className="analysis-copy" key={paragraphIndex}>{paragraph}</span>)}
+          <span className="meaning"><strong>Keywords:</strong> {item.card.meaning}.</span>
+          <span className="tap-hint back-hint">Tap outside the text to flip back</span>
+        </span>
       </span>
     </span>
   </button>;
@@ -347,7 +376,7 @@ function App() {
     </section>
 
     <section className="spread" aria-live="polite">
-      {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={flippedCards[i]} onFlip={() => flipCard(i)} /> : <div className="empty-card" key={p.key}><span>{i+1}</span><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
+      {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={flippedCards[i]} onFlip={() => flipCard(i)} /> : <div className="empty-card" key={p.key}><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
     </section>
 
     {reading.length > 0 && <section className="hero compact cast-again"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><RotateCcw size={18}/> Cast Again</button></section>}
