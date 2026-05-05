@@ -133,7 +133,7 @@ function getMoonPhase(date = new Date()) {
   return { ...phases[index], age: Math.round(age * 10) / 10 };
 }
 
-function TarotWheel({ reading, ritualState }) {
+function TarotWheel({ reading, ritualState, onCenterDown, onCenterUp }) {
   const selectedIds = new Set(reading.map(r => r.card.id));
   const moonPhase = useMemo(() => getMoonPhase(), []);
   const isActiveRitual = ['charging', 'building', 'collapse', 'selected', 'revealing'].includes(ritualState);
@@ -153,10 +153,10 @@ function TarotWheel({ reading, ritualState }) {
       {reading.map((item, index) => <div key={item.key} className={`orbit-lock orbit-${index}`}>
         <span>{item.label}</span>
       </div>)}
-      <div className="well-mouth" title={`Current moon phase: ${moonPhase.name}`}>
+      <button className="well-mouth" title={`Current moon phase: ${moonPhase.name}`} onPointerDown={onCenterDown} onPointerUp={onCenterUp} onPointerCancel={onCenterUp} onPointerLeave={onCenterUp}>
         <span className="moon-symbol" aria-hidden="true">{moonPhase.symbol}</span>
         <span className="moon-label">{moonPhase.name.replace(' ', '\n')}</span>
-      </div>
+      </button>
     </div>
   </div>;
 }
@@ -188,6 +188,7 @@ function App() {
   const [chargeText, setChargeText] = useState('Focus on a question, then press and hold the Moonwell.');
   const [flippedCards, setFlippedCards] = useState([false, false, false]);
   const timers = useRef([]);
+  const hapticTimer = useRef(null);
   const holdStart = useRef(0);
   const pointerSeed = useRef({ x: 0, y: 0 });
   const seedStars = useMemo(() => Array.from({ length: 120 }, (_, i) => ({ left: Math.random()*100, top: Math.random()*100, delay: Math.random()*5, size: Math.random()*2+1, id: i })), []);
@@ -195,6 +196,8 @@ function App() {
   const clearTimers = () => {
     timers.current.forEach(clearTimeout);
     timers.current = [];
+    if (hapticTimer.current) clearInterval(hapticTimer.current);
+    hapticTimer.current = null;
   };
 
   const vibrate = pattern => {
@@ -202,6 +205,8 @@ function App() {
   };
 
   const beginCharge = event => {
+    event.preventDefault();
+    event.stopPropagation();
     if (['charging', 'building', 'collapse', 'selected', 'revealing'].includes(ritualState)) return;
     clearTimers();
     vibrate(18);
@@ -211,15 +216,20 @@ function App() {
     setRevealedCount(0);
     setFlippedCards([false, false, false]);
     setRitualState('charging');
-    setChargeText('Hold to build energy…');
+    setChargeText('Keep holding the center…');
+    hapticTimer.current = setInterval(() => vibrate(10), 420);
     timers.current.push(setTimeout(() => {
       setRitualState(state => state === 'charging' ? 'building' : state);
-      setChargeText('Release to let gravity choose.');
+      setChargeText('Release the Moonwell to choose.');
+      if (hapticTimer.current) clearInterval(hapticTimer.current);
+      hapticTimer.current = setInterval(() => vibrate([12, 30, 12]), 260);
       vibrate([12, 45, 18]);
     }, 1200));
   };
 
   const releaseCharge = event => {
+    event.preventDefault();
+    event.stopPropagation();
     if (!['charging', 'building'].includes(ritualState)) return;
     clearTimers();
     const holdDuration = Math.max(800, Math.round(performance.now() - holdStart.current));
@@ -264,16 +274,16 @@ function App() {
   const isRitualActive = ['charging', 'building', 'collapse', 'selected', 'revealing'].includes(ritualState);
   const flipCard = index => setFlippedCards(cards => cards.map((isFlipped, i) => i === index ? !isFlipped : isFlipped));
 
-  return <main className={`app ${ritualState}`} onPointerDown={beginCharge} onPointerUp={releaseCharge} onPointerCancel={releaseCharge} onPointerLeave={releaseCharge}>
+  return <main className={`app ${ritualState}`}>
     <div className="stars">{seedStars.map(s => <i key={s.id} style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}</div>
     <section className="hero">
       <p className="eyebrow"><Sparkles size={16}/> AI Tarot Reading</p>
       <h1>Ask the Moonwell</h1>
-      <p className="lede">Hold your finger down to charge the Moonwell. Release, and gravity pulls three cards inward from the orbiting deck.</p>
-      <button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}>{reading.length ? <RotateCcw size={18}/> : <Sparkles size={18}/>} {reading.length ? 'Cast Again' : 'Hold Anywhere to Begin'}</button>
+      <p className="lede">Hold your finger on the moon at the center of the wheel. Feel the energy build, then release to pull three cards inward.</p>
+      <button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}>{reading.length ? <RotateCcw size={18}/> : <Sparkles size={18}/>} {reading.length ? 'Cast Again' : 'Hold the Center Moon'}</button>
     </section>
 
-    <TarotWheel reading={reading} ritualState={ritualState} />
+    <TarotWheel reading={reading} ritualState={ritualState} onCenterDown={beginCharge} onCenterUp={releaseCharge} />
 
     <section className="ritual-status" aria-live="polite">
       {chargeText}
