@@ -34,7 +34,7 @@ button { border: 0; cursor: pointer; display: inline-flex; align-items: center; 
 button:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.08); }
 button:disabled { cursor: wait; transform: none; filter: saturate(.75); opacity: .84; }
 
-.wheel-wrap { position: relative; width: min(94vw, 720px); max-width: calc(100vw - 24px); aspect-ratio: 1; margin: 0 auto 10px; display: grid; place-items: center; overflow: hidden; contain: paint; }
+.wheel-wrap { position: relative; width: min(100%, 720px); max-width: 100%; aspect-ratio: 1; margin: 0 auto 10px; display: grid; place-items: center; overflow: hidden; contain: paint; }
 .aura { position: absolute; inset: 1%; border-radius: 50%; background: radial-gradient(circle, rgba(255,226,151,.18), transparent 47%), conic-gradient(from 0deg, transparent, rgba(144, 255, 247, .16), transparent, rgba(255, 226, 120, .24), transparent, rgba(198, 105, 255, .18), transparent); filter: blur(18px); animation: spin 24s linear infinite reverse; }
 .wheel { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, rgba(5,3,9,.08) 0 20%, rgba(5,3,9,.32) 21% 36%, transparent 37%), url('/tarot-wheel.jpg') center / cover no-repeat; box-shadow: inset 0 0 58px rgba(0,0,0,.72), 0 0 70px rgba(255, 207, 126, .18), 0 0 120px rgba(78, 180, 255, .1); animation: spin 42s linear infinite; }
 .wheel::before { content: ''; position: absolute; inset: 29%; border-radius: 50%; background: radial-gradient(circle, rgba(0,0,0,.14), rgba(0,0,0,.025) 44%, transparent 64%); box-shadow: inset 0 0 42px rgba(0,0,0,.3); pointer-events: none; }
@@ -105,7 +105,7 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
 @media (max-width: 820px) {
   main { padding: 6px 12px 48px; overflow: hidden visible; }
   .spread { grid-template-columns: 1fr; width: 100%; }
-  .wheel-wrap { width: min(96vw, 520px); max-width: calc(100vw - 12px); margin-top: 0; }
+  .wheel-wrap { width: min(100%, 520px); max-width: 100%; margin-top: 0; }
   .card-slot { --radius: clamp(96px, 29vw, 156px); height: 20px; }
   .selected .orbit-0, .revealing .orbit-0, .done .orbit-0 { transform: translate(-70px, 30px) rotate(-9deg); }
   .selected .orbit-2, .revealing .orbit-2, .done .orbit-2 { transform: translate(70px, 30px) rotate(9deg); }
