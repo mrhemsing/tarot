@@ -16,10 +16,30 @@ const ranks = [
   ['Ace','seed, gift, beginning'], ['Two','choice, pairing, tension'], ['Three','growth, collaboration, signal'], ['Four','stability, pause, foundation'], ['Five','friction, test, change'], ['Six','harmony, passage, support'], ['Seven','challenge, strategy, conviction'], ['Eight','movement, craft, momentum'], ['Nine','threshold, resilience, harvest'], ['Ten','culmination, burden, completion'], ['Page','message, curiosity, apprentice energy'], ['Knight','quest, velocity, devotion'], ['Queen','mastery, care, inner authority'], ['King','command, stewardship, mature power']
 ];
 
+const gemstonePalette = [
+  ['Amethyst', '#fff5ff', '#d89cff', '#7b2fff', '#240a42'],
+  ['Emerald', '#ecfff2', '#66f0a2', '#087f54', '#04291f'],
+  ['Ruby', '#fff0f2', '#ff6c8a', '#b90f3f', '#33020f'],
+  ['Sapphire', '#eef7ff', '#6bb8ff', '#1c49c9', '#06143a'],
+  ['Citrine', '#fffbe8', '#ffd96a', '#d77917', '#3a1804'],
+  ['Moonstone', '#ffffff', '#c9f6ff', '#878ce8', '#17183f'],
+  ['Opal', '#ffffff', '#ffb8ef', '#72fff1', '#22205a'],
+  ['Garnet', '#ffe8ee', '#d54a72', '#711027', '#21050b'],
+  ['Turquoise', '#efffff', '#53f1dc', '#008f9d', '#042a35'],
+  ['Onyx', '#f7f0ff', '#6d607d', '#17121f', '#020105'],
+  ['Amber', '#fff3c1', '#ffb23e', '#a84d09', '#2d1302'],
+  ['Rose Quartz', '#fff4fb', '#ffabc9', '#c95d90', '#351126']
+];
+
+const withGem = card => {
+  const gem = gemstonePalette[card.id % gemstonePalette.length];
+  return { ...card, gem: gem[0], gemColors: gem.slice(1) };
+};
+
 const deck = [
-  ...major.map(([name, meaning], i) => ({ id: i, name, arcana: 'Major Arcana', sigil: '✦', meaning })),
+  ...major.map(([name, meaning], i) => withGem({ id: i, name, arcana: 'Major Arcana', sigil: '✦', meaning })),
   ...Object.entries(suits).flatMap(([suit, [element, domain]], suitIndex) =>
-    ranks.map(([rank, rankMeaning], rankIndex) => ({
+    ranks.map(([rank, rankMeaning], rankIndex) => withGem({
       id: 22 + suitIndex * 14 + rankIndex,
       name: `${rank} of ${suit}`,
       arcana: suit,
@@ -75,7 +95,7 @@ function MarbleWheel({ reading, activeMarbleId, droppedIds, isCasting }) {
           key={card.id}
           className={`marble ${selectedIds.has(card.id) ? 'selected' : ''} ${isDropped ? 'gone' : ''} ${isActive ? 'falling' : ''}`}
           title={card.name}
-          style={{ '--angle': `${angle}deg`, '--delay': `${index * -0.035}s` }}
+          style={{ '--angle': `${angle}deg`, '--delay': `${index * -0.035}s`, '--gem-hi': card.gemColors[0], '--gem-mid': card.gemColors[1], '--gem-core': card.gemColors[2], '--gem-shadow': card.gemColors[3] }}
         ><span>{card.sigil}</span></div>;
       })}
       <div className="well-mouth"><Moon size={34}/><span>Moonwell</span></div>
