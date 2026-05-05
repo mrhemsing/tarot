@@ -142,7 +142,7 @@ function MarbleWheel({ reading, activeMarbleId, droppedIds, isCasting }) {
       })}
       <div className="well-mouth" title={`Current moon phase: ${moonPhase.name}`}>
         <span className="moon-symbol" aria-hidden="true">{moonPhase.symbol}</span>
-        <span className="moon-label">{moonPhase.name}</span>
+        <span className="moon-label">{moonPhase.name.replace(' ', '\n')}</span>
       </div>
     </div>
   </div>;
