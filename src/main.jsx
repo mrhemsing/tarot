@@ -193,11 +193,13 @@ function ReadingCard({ item, index, flipped, onFlip }) {
   return <button className={`tarot-flip ${flipped ? 'is-flipped' : ''}`} style={{ '--i': index }} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={handleClick} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
     <span className="tarot-inner">
       <span className="tarot-face tarot-front art-front">
+        <span className="flip-control" aria-hidden="true"><RotateCcw size={16} /></span>
         <span className="position">{item.label}</span>
         <img className="rws-card-art" src={item.card.image} alt={item.card.name} draggable="false" />
         <span className="tap-hint">Tap to reveal</span>
       </span>
       <span className="tarot-face tarot-back">
+        <span className="flip-control" aria-hidden="true"><RotateCcw size={16} /></span>
         <span className="card-scroll">
           <span className="position">{item.label}</span>
           <span className="card-name">{item.card.name}</span>
@@ -205,7 +207,6 @@ function ReadingCard({ item, index, flipped, onFlip }) {
           <span className="analysis-label">ChatGPT-style analysis</span>
           {analysis.map((paragraph, paragraphIndex) => <span className="analysis-copy" key={paragraphIndex}>{paragraph}</span>)}
           <span className="meaning"><strong>Keywords:</strong> {item.card.meaning}.</span>
-          <span className="tap-hint back-hint">Tap outside the text to flip back</span>
         </span>
       </span>
     </span>
