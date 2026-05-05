@@ -298,7 +298,7 @@ function App() {
       <p className="eyebrow"><Sparkles size={16}/> AI Tarot Reading</p>
       <h1>Ask the Moonwell</h1>
       <p className="lede">Hold your finger on the moon at the center of the wheel. Feel the energy build, then release to pull three cards inward.</p>
-      <button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}>{reading.length ? <RotateCcw size={18}/> : <Sparkles size={18}/>} {reading.length ? 'Cast Again' : 'Hold the Center Moon'}</button>
+      {reading.length > 0 && <button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><RotateCcw size={18}/> Cast Again</button>}
     </section>
 
     <TarotWheel reading={reading} ritualState={ritualState} onCenterDown={beginCharge} onCenterUp={releaseCharge} />
