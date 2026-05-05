@@ -325,10 +325,6 @@ function App() {
 
     {reading.length > 0 && <section className="hero compact"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><RotateCcw size={18}/> Cast Again</button></section>}
 
-    <section className="ritual-status" aria-live="polite">
-      {chargeText}
-    </section>
-
     <section className="spread" aria-live="polite">
       {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={flippedCards[i]} onFlip={() => flipCard(i)} /> : <div className="empty-card" key={p.key}><span>{i+1}</span><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
     </section>
