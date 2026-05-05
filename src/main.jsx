@@ -31,9 +31,31 @@ const gemstonePalette = [
   ['Rose Quartz', '#fff4fb', '#ffabc9', '#c95d90', '#351126']
 ];
 
+const stoneShapes = [
+  '54% 46% 48% 52% / 50% 43% 57% 50%',
+  '61% 39% 55% 45% / 45% 57% 43% 55%',
+  '48% 52% 42% 58% / 58% 47% 53% 42%',
+  '57% 43% 62% 38% / 39% 54% 46% 61%',
+  '44% 56% 51% 49% / 53% 38% 62% 47%',
+  '63% 37% 44% 56% / 52% 59% 41% 48%',
+  '50% 50% 60% 40% / 44% 51% 49% 56%',
+  '46% 54% 39% 61% / 60% 45% 55% 40%'
+];
+
 const withGem = card => {
   const gem = gemstonePalette[card.id % gemstonePalette.length];
-  return { ...card, gem: gem[0], gemColors: gem.slice(1) };
+  return {
+    ...card,
+    gem: gem[0],
+    gemColors: gem.slice(1),
+    stoneShape: stoneShapes[card.id % stoneShapes.length],
+    stoneSize: 16 + (card.id * 7) % 8,
+    stoneScaleX: (92 + (card.id * 11) % 18) / 100,
+    stoneScaleY: (92 + (card.id * 13) % 18) / 100,
+    shineX: 18 + (card.id * 17) % 28,
+    shineY: 12 + (card.id * 19) % 24,
+    facetTurn: `${(card.id * 37) % 180}deg`
+  };
 };
 
 const deck = [
@@ -95,7 +117,7 @@ function MarbleWheel({ reading, activeMarbleId, droppedIds, isCasting }) {
           key={card.id}
           className={`marble ${selectedIds.has(card.id) ? 'selected' : ''} ${isDropped ? 'gone' : ''} ${isActive ? 'falling' : ''}`}
           title={card.name}
-          style={{ '--angle': `${angle}deg`, '--delay': `${index * -0.035}s`, '--gem-hi': card.gemColors[0], '--gem-mid': card.gemColors[1], '--gem-core': card.gemColors[2], '--gem-shadow': card.gemColors[3] }}
+          style={{ '--angle': `${angle}deg`, '--delay': `${index * -0.035}s`, '--gem-hi': card.gemColors[0], '--gem-mid': card.gemColors[1], '--gem-core': card.gemColors[2], '--gem-shadow': card.gemColors[3], '--stone-shape': card.stoneShape, '--stone-size': `${card.stoneSize}px`, '--stone-scale-x': card.stoneScaleX, '--stone-scale-y': card.stoneScaleY, '--shine-x': `${card.shineX}%`, '--shine-y': `${card.shineY}%`, '--facet-turn': card.facetTurn }}
         ><span>{card.sigil}</span></div>;
       })}
       <div className="well-mouth"><Moon size={34}/><span>Moonwell</span></div>
