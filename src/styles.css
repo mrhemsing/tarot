@@ -20,7 +20,7 @@ body::before {
     linear-gradient(145deg, #070511 0%, #15091f 48%, #07020c 100%);
   z-index: -3;
 }
-main { position: relative; width: 100vw; max-width: 100vw; min-width: 0; min-height: 100vh; padding: 8px 20px 56px; overflow-x: hidden !important; overflow-y: visible; contain: paint; touch-action: manipulation; cursor: default; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+main { position: relative; width: 100vw; max-width: 100vw; min-width: 0; min-height: 100vh; padding: 0 20px 56px; overflow-x: hidden !important; overflow-y: visible; contain: paint; touch-action: manipulation; cursor: default; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 main.charging, main.building { cursor: grabbing; }
 main.building::after, main.charged::after, main.collapse::after, main.revealing::after { content: ''; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(circle at center, transparent 36%, rgba(0,0,0,.24)); z-index: -1; }
 .stars { position: fixed; inset: 0; pointer-events: none; z-index: -2; }
@@ -34,7 +34,8 @@ button { border: 0; cursor: pointer; display: inline-flex; align-items: center; 
 button:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.08); }
 button:disabled { cursor: wait; transform: none; filter: saturate(.75); opacity: .84; }
 
-.wheel-wrap { position: relative; width: min(calc(100vw - 48px), 660px); max-width: 100%; aspect-ratio: 1; margin: 14px auto 16px; display: grid; place-items: center; overflow: hidden; contain: paint; }
+.wheel-wrap { position: relative; width: min(calc(100vw - 48px), 660px); max-width: 100%; aspect-ratio: 1; margin: 0 auto 18px; display: grid; place-items: center; overflow: visible; contain: layout; padding-top: 18px; }
+.wheel-wrap::before { content: ''; position: absolute; left: 50%; top: 0; width: 100vw; height: calc(100% + 34px); transform: translateX(-50%); background: radial-gradient(circle at 50% 42%, rgba(255,226,151,.14), transparent 36%), linear-gradient(135deg, rgba(15, 37, 61, .82), rgba(69, 27, 92, .86)); z-index: -2; }
 .aura { position: absolute; inset: 1%; border-radius: 50%; background: radial-gradient(circle, rgba(255,226,151,.18), transparent 47%), conic-gradient(from 0deg, transparent, rgba(144, 255, 247, .16), transparent, rgba(255, 226, 120, .24), transparent, rgba(198, 105, 255, .18), transparent); filter: blur(18px); animation: spin 24s linear infinite reverse; }
 .wheel { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, rgba(5,3,9,.08) 0 20%, rgba(5,3,9,.32) 21% 36%, transparent 37%), url('/tarot-wheel.jpg') center / cover no-repeat; box-shadow: inset 0 0 58px rgba(0,0,0,.72), 0 0 70px rgba(255, 207, 126, .18), 0 0 120px rgba(78, 180, 255, .1); animation: spin 42s linear infinite; }
 .wheel::before { content: ''; position: absolute; inset: 29%; border-radius: 50%; background: radial-gradient(circle, rgba(0,0,0,.14), rgba(0,0,0,.025) 44%, transparent 64%); box-shadow: inset 0 0 42px rgba(0,0,0,.3); pointer-events: none; }
@@ -103,13 +104,14 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
 @keyframes twinkle { 0%,100% { opacity: .2; transform: scale(.7); } 50% { opacity: 1; transform: scale(1.3); } }
 
 @media (max-width: 820px) {
-  main { width: 100vw; max-width: 100vw; padding: 6px 10px 48px; overflow-x: hidden !important; overflow-y: visible; }
+  main { width: 100vw; max-width: 100vw; padding: 0 10px 48px; overflow-x: hidden !important; overflow-y: visible; }
   .spread { grid-template-columns: minmax(0, 1fr); width: calc(100vw - 28px); max-width: calc(100vw - 28px); overflow-x: hidden; overflow-y: visible; }
   .tarot-flip { width: 100%; max-width: 100%; margin-inline: auto; perspective: 900px; }
   .tarot-inner { width: 100%; max-width: 100%; }
   .tarot-face { padding: 24px 18px; }
   .card-name { font-size: clamp(1.25rem, 7.6vw, 1.8rem); }
-  .wheel-wrap { width: min(calc(100vw - 56px), 470px); max-width: calc(100vw - 56px); margin: 12px auto 16px; }
+  .wheel-wrap { width: min(calc(100vw - 56px), 470px); max-width: calc(100vw - 56px); margin: 0 auto 16px; padding-top: 14px; }
+  .wheel-wrap::before { height: calc(100% + 28px); }
   .card-slot { --radius: clamp(96px, 29vw, 156px); height: 20px; }
   .selected .orbit-0, .revealing .orbit-0, .done .orbit-0 { transform: translate(-70px, 30px) rotate(-9deg); }
   .selected .orbit-2, .revealing .orbit-2, .done .orbit-2 { transform: translate(70px, 30px) rotate(9deg); }
