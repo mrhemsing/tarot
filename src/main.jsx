@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Sparkles, RotateCcw } from 'lucide-react';
 import './styles.css';
@@ -193,6 +193,20 @@ function App() {
   const pointerSeed = useRef({ x: 0, y: 0 });
   const seedStars = useMemo(() => Array.from({ length: 120 }, (_, i) => ({ left: Math.random()*100, top: Math.random()*100, delay: Math.random()*5, size: Math.random()*2+1, id: i })), []);
 
+  useEffect(() => {
+    const clearSelection = () => window.getSelection?.().removeAllRanges();
+    const blockSelection = event => {
+      event.preventDefault();
+      clearSelection();
+    };
+    document.addEventListener('selectionchange', clearSelection);
+    document.addEventListener('selectstart', blockSelection);
+    return () => {
+      document.removeEventListener('selectionchange', clearSelection);
+      document.removeEventListener('selectstart', blockSelection);
+    };
+  }, []);
+
   const clearTimers = () => {
     timers.current.forEach(clearTimeout);
     timers.current = [];
@@ -207,6 +221,8 @@ function App() {
   const beginCharge = event => {
     event.preventDefault();
     event.stopPropagation();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    window.getSelection?.().removeAllRanges();
     if (['charging', 'building', 'collapse', 'selected', 'revealing'].includes(ritualState)) return;
     clearTimers();
     vibrate(18);
@@ -230,6 +246,8 @@ function App() {
   const releaseCharge = event => {
     event.preventDefault();
     event.stopPropagation();
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    window.getSelection?.().removeAllRanges();
     if (!['charging', 'building'].includes(ritualState)) return;
     clearTimers();
     const holdDuration = Math.max(800, Math.round(performance.now() - holdStart.current));
@@ -274,7 +292,7 @@ function App() {
   const isRitualActive = ['charging', 'building', 'collapse', 'selected', 'revealing'].includes(ritualState);
   const flipCard = index => setFlippedCards(cards => cards.map((isFlipped, i) => i === index ? !isFlipped : isFlipped));
 
-  return <main className={`app ${ritualState}`} onContextMenu={event => event.preventDefault()}>
+  return <main className={`app ${ritualState}`} onContextMenu={event => event.preventDefault()} onSelect={event => event.preventDefault()} onSelectStart={event => event.preventDefault()}>
     <div className="stars">{seedStars.map(s => <i key={s.id} style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}</div>
     <section className="hero">
       <p className="eyebrow"><Sparkles size={16}/> AI Tarot Reading</p>
