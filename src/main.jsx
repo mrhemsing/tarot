@@ -49,7 +49,7 @@ const withGem = card => {
     gem: gem[0],
     gemColors: gem.slice(1),
     stoneShape: stoneShapes[card.id % stoneShapes.length],
-    stoneSize: 16 + (card.id * 7) % 8,
+    stoneSize: 13 + (card.id * 7) % 5,
     stoneScaleX: (92 + (card.id * 11) % 18) / 100,
     stoneScaleY: (92 + (card.id * 13) % 18) / 100,
     shineX: 18 + (card.id * 17) % 28,
