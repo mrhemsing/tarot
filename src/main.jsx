@@ -324,14 +324,9 @@ function App() {
 
   return <main className={`app ${ritualState}`} onContextMenu={event => event.preventDefault()} onSelect={event => event.preventDefault()} onSelectStart={event => event.preventDefault()}>
     <div className="stars">{seedStars.map(s => <i key={s.id} style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}</div>
-    <section className="hero">
-      <p className="eyebrow"><Sparkles size={16}/> AI Tarot Reading</p>
-      <h1>Ask the Moonwell</h1>
-      <p className="lede">Hold your finger on the moon at the center of the wheel. Feel the energy build, then release to pull three cards inward.</p>
-      {reading.length > 0 && <button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><RotateCcw size={18}/> Cast Again</button>}
-    </section>
-
     <TarotWheel reading={reading} ritualState={ritualState} chargeProgress={chargeProgress} onCenterDown={beginCharge} onCenterUp={releaseCharge} />
+
+    {reading.length > 0 && <section className="hero compact"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><RotateCcw size={18}/> Cast Again</button></section>}
 
     <section className="ritual-status" aria-live="polite">
       {chargeText}
