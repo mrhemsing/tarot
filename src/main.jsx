@@ -142,7 +142,7 @@ function getMoonPhase(date = new Date()) {
 function TarotWheel({ reading, ritualState, chargeProgress, onCenterDown, onCenterUp }) {
   const selectedIds = new Set(reading.map(r => r.card.id));
   const moonPhase = useMemo(() => getMoonPhase(), []);
-  const isActiveRitual = ['charging', 'building', 'charged', 'collapse', 'selected', 'revealing'].includes(ritualState);
+  const isActiveRitual = ['charging', 'building', 'charged', 'collapse', 'selected', 'revealing', 'returning'].includes(ritualState);
   return <div className={`wheel-wrap ${ritualState} ${isActiveRitual ? 'casting' : ''}`} style={{ '--charge': chargeProgress }} aria-label="Tarot wheel choosing three cards from the Moonwell">
     <div className="aura" />
     <div className="wheel">
@@ -229,7 +229,7 @@ function App() {
     event.stopPropagation();
     event.currentTarget.setPointerCapture?.(event.pointerId);
     window.getSelection?.().removeAllRanges();
-    if (['charging', 'building', 'charged', 'collapse', 'selected', 'revealing'].includes(ritualState)) return;
+    if (['charging', 'building', 'charged', 'collapse', 'selected', 'revealing', 'returning'].includes(ritualState)) return;
     clearTimers();
     vibrate(18);
     holdStart.current = performance.now();
@@ -312,6 +312,21 @@ function App() {
 
   const resetRitual = () => {
     clearTimers();
+    if (reading.length > 0) {
+      setFlippedCards([false, false, false]);
+      setRevealedCount(3);
+      setChargeProgress(0);
+      setRitualState('returning');
+      setChargeText('The cards rise back to the crown of the wheel.');
+      vibrate([14, 28, 18]);
+      timers.current.push(setTimeout(() => {
+        setReading([]);
+        setRevealedCount(0);
+        setRitualState('idle');
+        setChargeText('Focus on a question, then press and hold the Moonwell.');
+      }, 820));
+      return;
+    }
     setReading([]);
     setRevealedCount(0);
     setChargeProgress(0);
@@ -320,7 +335,7 @@ function App() {
     setChargeText('Focus on a question, then press and hold the Moonwell.');
   };
 
-  const isRitualActive = ['charging', 'building', 'charged', 'collapse', 'selected', 'revealing'].includes(ritualState);
+  const isRitualActive = ['charging', 'building', 'charged', 'collapse', 'selected', 'revealing', 'returning'].includes(ritualState);
   const flipCard = index => setFlippedCards(cards => cards.map((isFlipped, i) => i === index ? !isFlipped : isFlipped));
 
   return <main className={`app ${ritualState}`} onContextMenu={event => event.preventDefault()} onSelect={event => event.preventDefault()} onSelectStart={event => event.preventDefault()}>
@@ -331,11 +346,11 @@ function App() {
       {chargeText}
     </section>
 
-    {reading.length > 0 && <section className="hero compact"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><RotateCcw size={18}/> Cast Again</button></section>}
-
     <section className="spread" aria-live="polite">
       {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={flippedCards[i]} onFlip={() => flipCard(i)} /> : <div className="empty-card" key={p.key}><span>{i+1}</span><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
     </section>
+
+    {reading.length > 0 && <section className="hero compact cast-again"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><RotateCcw size={18}/> Cast Again</button></section>}
   </main>;
 }
 
