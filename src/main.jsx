@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Sparkles, Moon, RotateCcw } from 'lucide-react';
 import './styles.css';
@@ -52,9 +52,11 @@ function pickReading() {
   return chosen.map((card, i) => ({ ...positions[i], card, line: phrases[positions[i].key][Math.floor(Math.random() * 3)] }));
 }
 
-function MarbleWheel({ reading, activeIndex }) {
-  const selectedIds = new Set(reading.map(r => r.card.id));
-  return <div className="wheel-wrap" aria-label="Zoetrope wishing well with 78 tarot marbles">
+function MarbleWheel({ reading, activeIndex, fallenCount, isCasting }) {
+  const visibleSelections = reading.slice(0, fallenCount).map(r => r.card.id);
+  if (activeIndex >= 0 && reading[activeIndex]) visibleSelections.push(reading[activeIndex].card.id);
+  const selectedIds = new Set(visibleSelections);
+  return <div className={`wheel-wrap ${isCasting ? 'casting' : ''}`} aria-label="Zoetrope wishing well with 78 tarot marbles">
     <div className="aura" />
     <div className="wheel">
       {deck.map((card, index) => {
@@ -86,29 +88,55 @@ function ReadingCard({ item, index }) {
 function App() {
   const [reading, setReading] = useState([]);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [fallenCount, setFallenCount] = useState(0);
+  const [phase, setPhase] = useState('idle');
+  const timers = useRef([]);
   const seedStars = useMemo(() => Array.from({ length: 90 }, (_, i) => ({ left: Math.random()*100, top: Math.random()*100, delay: Math.random()*5, size: Math.random()*2+1, id: i })), []);
 
+  const clearTimers = () => {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+  };
+
   const cast = () => {
+    clearTimers();
     const next = pickReading();
+    const spinTime = 8000 + Math.floor(Math.random() * 4001);
     setReading(next);
     setActiveIndex(-1);
-    [0,1,2].forEach(i => setTimeout(() => setActiveIndex(i), 650 + i * 950));
-    setTimeout(() => setActiveIndex(-1), 3900);
+    setFallenCount(0);
+    setPhase('casting');
+
+    [0,1,2].forEach(i => {
+      timers.current.push(setTimeout(() => setActiveIndex(i), spinTime + i * 950));
+      timers.current.push(setTimeout(() => setFallenCount(i + 1), spinTime + 720 + i * 950));
+    });
+    timers.current.push(setTimeout(() => {
+      setActiveIndex(-1);
+      setPhase('revealed');
+    }, spinTime + 3600));
   };
+
+  const isCasting = phase === 'casting';
+  const isRevealed = phase === 'revealed';
 
   return <main>
     <div className="stars">{seedStars.map(s => <i key={s.id} style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}</div>
     <section className="hero">
       <p className="eyebrow"><Sparkles size={16}/> AI Tarot Reading</p>
       <h1>Ask the Moonwell</h1>
-      <p className="lede">Seventy-eight enchanted marbles circle the wishing well. When the wheel turns, three fall inward to reveal your past, present, and future.</p>
-      <button onClick={cast}>{reading.length ? <RotateCcw size={18}/> : <Sparkles size={18}/>} {reading.length ? 'Cast Again' : 'Cast the Reading'}</button>
+      <p className="lede">Seventy-eight enchanted marbles circle the wishing well. Let them spin until the Moonwell chooses three: past, present, and future.</p>
+      <button onClick={cast} disabled={isCasting}>{isCasting ? <Sparkles size={18}/> : reading.length ? <RotateCcw size={18}/> : <Sparkles size={18}/>} {isCasting ? 'The marbles are spinning...' : reading.length ? 'Cast Again' : 'Cast the Reading'}</button>
     </section>
 
-    <MarbleWheel reading={reading} activeIndex={activeIndex} />
+    <MarbleWheel reading={reading} activeIndex={activeIndex} fallenCount={fallenCount} isCasting={isCasting} />
+
+    <section className="ritual-status" aria-live="polite">
+      {isCasting ? `The wheel is choosing... ${fallenCount}/3 marbles have fallen.` : isRevealed ? 'The Moonwell has spoken.' : 'Focus on a question, then cast the reading.'}
+    </section>
 
     <section className="spread" aria-live="polite">
-      {reading.length === 0 ? positions.map((p, i) => <div className="empty-card" key={p.key}><span>{i+1}</span><h3>{p.label}</h3><p>{p.prompt}</p></div>) : reading.map((item, i) => <ReadingCard key={item.key + item.card.id} item={item} index={i} />)}
+      {!isRevealed ? positions.map((p, i) => <div className="empty-card" key={p.key}><span>{i+1}</span><h3>{p.label}</h3><p>{isCasting ? 'Hidden in the spinning marbles...' : p.prompt}</p></div>) : reading.map((item, i) => <ReadingCard key={item.key + item.card.id} item={item} index={i} />)}
     </section>
   </main>;
 }
