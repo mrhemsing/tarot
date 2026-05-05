@@ -36,13 +36,14 @@ button:disabled { cursor: wait; transform: none; filter: saturate(.75); opacity:
 .casting .aura { animation-duration: 5.5s; filter: blur(18px) brightness(1.25); }
 .casting .wheel { animation-duration: 7.8s; box-shadow: inset 0 0 90px rgba(238,208,255,.26), 0 0 110px rgba(103,239,255,.22); }
 .wheel-wrap:not(.casting) .marble { opacity: 1; animation: pulse 2.4s infinite ease-in-out var(--delay); }
-.casting .marble { animation: spiral-in calc(var(--spin-time) - 450ms) cubic-bezier(.18,.72,.13,1) var(--vortex-delay) forwards; }
+.casting .marble { animation: pulse .95s infinite ease-in-out var(--delay); }
 .wheel::before, .wheel::after { content: ''; position: absolute; inset: 14%; border-radius: 50%; border: 1px dashed rgba(255,255,255,.25); animation: spin 13s linear infinite reverse; }
 .wheel::after { inset: 28%; border-style: solid; border-color: rgba(255, 232, 142, .22); animation-duration: 21s; }
 .marble { --radius: clamp(130px, 34vw, 220px); position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px; border-radius: 50%; transform: rotate(var(--angle)) translateX(var(--radius)); background: radial-gradient(circle at 34% 28%, #fff, #ffd979 25%, #a64aff 62%, #160c2a 100%); box-shadow: 0 0 12px rgba(255, 220, 128, .55); animation: pulse 2.4s infinite ease-in-out var(--delay); transition: opacity .3s, filter .3s; }
 .marble span { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(37, 12, 54, .8); font-size: 9px; font-weight: 900; }
 .marble.selected { filter: brightness(1.45) saturate(1.3); box-shadow: 0 0 26px #fff0a6, 0 0 44px rgba(169, 99, 255, .8); z-index: 3; }
-.marble.falling { animation: fall .9s cubic-bezier(.18,.88,.34,1.12) forwards; }
+.marble.gone { opacity: 0; transform: rotate(var(--angle)) translateX(0) scale(.25); pointer-events: none; }
+.marble.falling { animation: fall .34s cubic-bezier(.18,.88,.34,1.12) forwards; }
 .well-mouth { position: absolute; inset: 35%; border-radius: 50%; display: grid; place-items: center; align-content: center; gap: 2px; color: #fff4bd; font-family: Cinzel, serif; background: radial-gradient(circle at center, #09030f 0 40%, #321447 72%, #ffe99a 100%); box-shadow: inset 0 0 36px #030006, 0 0 42px rgba(255,226,151,.28); }
 .well-mouth span { font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; }
 .ritual-status { min-height: 28px; margin: 0 auto 18px; text-align: center; color: #fff0a7; font-family: Cinzel, serif; letter-spacing: .08em; text-transform: uppercase; font-size: .82rem; text-shadow: 0 0 18px rgba(255, 240, 167, .45); }
@@ -71,14 +72,7 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
 
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes pulse { 50% { transform: rotate(var(--angle)) translateX(var(--radius)) scale(1.28); } }
-@keyframes spiral-in {
-  0% { transform: rotate(var(--angle)) translateX(var(--radius)) scale(1); opacity: 1; }
-  28% { transform: rotate(calc(var(--angle) + 420deg)) translateX(calc(var(--radius) * .82)) scale(1.18); opacity: 1; }
-  58% { transform: rotate(calc(var(--angle) + 920deg)) translateX(calc(var(--radius) * .48)) scale(1.02); opacity: .92; }
-  86% { transform: rotate(calc(var(--angle) + 1380deg)) translateX(calc(var(--radius) * .14)) scale(.82); opacity: .72; }
-  100% { transform: rotate(calc(var(--angle) + 1620deg)) translateX(0) scale(.36); opacity: .34; }
-}
-@keyframes fall { 0% { transform: rotate(calc(var(--angle) + 1620deg)) translateX(0) scale(.95); opacity: 1; } 55% { transform: rotate(calc(var(--angle) + 1840deg)) translateX(26px) scale(1.85); opacity: 1; } 100% { transform: rotate(calc(var(--angle) + 1960deg)) translateX(0) scale(.42); opacity: .12; } }
+@keyframes fall { 0% { transform: rotate(var(--angle)) translateX(var(--radius)) scale(1.35); opacity: 1; } 72% { transform: rotate(calc(var(--angle) + 190deg)) translateX(12px) scale(1.7); opacity: 1; } 100% { transform: rotate(calc(var(--angle) + 260deg)) translateX(0) scale(.26); opacity: 0; } }
 @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes twinkle { 0%,100% { opacity: .2; transform: scale(.7); } 50% { opacity: 1; transform: scale(1.3); } }
 

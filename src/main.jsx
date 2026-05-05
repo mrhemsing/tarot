@@ -52,22 +52,30 @@ function pickReading() {
   return chosen.map((card, i) => ({ ...positions[i], card, line: phrases[positions[i].key][Math.floor(Math.random() * 3)] }));
 }
 
-function MarbleWheel({ reading, activeIndex, fallenCount, isCasting, spinTime }) {
-  const visibleSelections = reading.slice(0, fallenCount).map(r => r.card.id);
-  if (activeIndex >= 0 && reading[activeIndex]) visibleSelections.push(reading[activeIndex].card.id);
-  const selectedIds = new Set(visibleSelections);
-  return <div className={`wheel-wrap ${isCasting ? 'casting' : ''}`} style={{ '--spin-time': `${spinTime}ms` }} aria-label="Zoetrope wishing well with 78 tarot marbles spinning into the center">
+function buildDropOrder(reading) {
+  const selected = reading.map(r => r.card.id);
+  const selectedSet = new Set(selected);
+  const others = deck.map(card => card.id).filter(id => !selectedSet.has(id)).sort(() => Math.random() - 0.5);
+  const order = [...others];
+  const revealSlots = [18, 43, 68].map(slot => slot + Math.floor(Math.random() * 8));
+  selected.forEach((id, index) => order.splice(Math.min(revealSlots[index], order.length), 0, id));
+  return order;
+}
+
+function MarbleWheel({ reading, activeMarbleId, droppedIds, isCasting }) {
+  const selectedIds = new Set(reading.map(r => r.card.id));
+  return <div className={`wheel-wrap ${isCasting ? 'casting' : ''}`} aria-label="Zoetrope wishing well with 78 tarot marbles dropping into the center one by one">
     <div className="aura" />
     <div className="wheel">
       {deck.map((card, index) => {
         const angle = (360 / deck.length) * index;
-        const chosenIndex = reading.findIndex(r => r.card.id === card.id);
-        const isActive = chosenIndex === activeIndex;
+        const isActive = card.id === activeMarbleId;
+        const isDropped = droppedIds.has(card.id);
         return <div
           key={card.id}
-          className={`marble ${selectedIds.has(card.id) ? 'selected' : ''} ${isActive ? 'falling' : ''}`}
+          className={`marble ${selectedIds.has(card.id) ? 'selected' : ''} ${isDropped ? 'gone' : ''} ${isActive ? 'falling' : ''}`}
           title={card.name}
-          style={{ '--angle': `${angle}deg`, '--delay': `${index * -0.035}s`, '--vortex-delay': `${(index % 13) * 0.035}s` }}
+          style={{ '--angle': `${angle}deg`, '--delay': `${index * -0.035}s` }}
         ><span>{card.sigil}</span></div>;
       })}
       <div className="well-mouth"><Moon size={34}/><span>Moonwell</span></div>
@@ -97,10 +105,11 @@ function ReadingCard({ item, index, flipped, onFlip }) {
 
 function App() {
   const [reading, setReading] = useState([]);
-  const [activeIndex, setActiveIndex] = useState(-1);
+  const [activeMarbleId, setActiveMarbleId] = useState(null);
+  const [droppedIds, setDroppedIds] = useState(new Set());
   const [fallenCount, setFallenCount] = useState(0);
+  const [revealedCount, setRevealedCount] = useState(0);
   const [phase, setPhase] = useState('idle');
-  const [spinTime, setSpinTime] = useState(10000);
   const [flippedCards, setFlippedCards] = useState([false, false, false]);
   const timers = useRef([]);
   const seedStars = useMemo(() => Array.from({ length: 90 }, (_, i) => ({ left: Math.random()*100, top: Math.random()*100, delay: Math.random()*5, size: Math.random()*2+1, id: i })), []);
@@ -113,22 +122,30 @@ function App() {
   const cast = () => {
     clearTimers();
     const next = pickReading();
-    const nextSpinTime = 8000 + Math.floor(Math.random() * 4001);
-    setSpinTime(nextSpinTime);
+    const dropOrder = buildDropOrder(next);
+    const duration = 8000 + Math.floor(Math.random() * 4001);
+    const step = duration / dropOrder.length;
     setReading(next);
-    setActiveIndex(-1);
+    setActiveMarbleId(null);
+    setDroppedIds(new Set());
     setFallenCount(0);
+    setRevealedCount(0);
     setFlippedCards([false, false, false]);
     setPhase('casting');
 
-    [0,1,2].forEach(i => {
-      timers.current.push(setTimeout(() => setActiveIndex(i), nextSpinTime + i * 950));
-      timers.current.push(setTimeout(() => setFallenCount(i + 1), nextSpinTime + 720 + i * 950));
+    dropOrder.forEach((cardId, index) => {
+      timers.current.push(setTimeout(() => setActiveMarbleId(cardId), index * step));
+      timers.current.push(setTimeout(() => {
+        setDroppedIds(ids => new Set([...ids, cardId]));
+        setFallenCount(index + 1);
+        const selectedIndex = next.findIndex(item => item.card.id === cardId);
+        if (selectedIndex >= 0) setRevealedCount(count => Math.max(count, selectedIndex + 1));
+      }, index * step + Math.min(260, step * .72)));
     });
     timers.current.push(setTimeout(() => {
-      setActiveIndex(-1);
+      setActiveMarbleId(null);
       setPhase('revealed');
-    }, nextSpinTime + 3600));
+    }, duration + 500));
   };
 
   const isCasting = phase === 'casting';
@@ -140,18 +157,18 @@ function App() {
     <section className="hero">
       <p className="eyebrow"><Sparkles size={16}/> AI Tarot Reading</p>
       <h1>Ask the Moonwell</h1>
-      <p className="lede">Seventy-eight enchanted marbles circle the wishing well, spiraling down into the Moonwell until three are chosen: past, present, and future.</p>
+      <p className="lede">Seventy-eight enchanted marbles begin on the rim of the wishing well. One by one they drop into the Moonwell, revealing the chosen past, present, and future cards as they fall.</p>
       <button onClick={cast} disabled={isCasting}>{isCasting ? <Sparkles size={18}/> : reading.length ? <RotateCcw size={18}/> : <Sparkles size={18}/>} {isCasting ? 'The marbles are spinning...' : reading.length ? 'Cast Again' : 'Cast the Reading'}</button>
     </section>
 
-    <MarbleWheel reading={reading} activeIndex={activeIndex} fallenCount={fallenCount} isCasting={isCasting} spinTime={spinTime} />
+    <MarbleWheel reading={reading} activeMarbleId={activeMarbleId} droppedIds={droppedIds} isCasting={isCasting} />
 
     <section className="ritual-status" aria-live="polite">
-      {isCasting ? fallenCount ? `The chosen marbles are surfacing... ${fallenCount}/3` : 'All 78 marbles are spiraling into the center...' : isRevealed ? 'The Moonwell has spoken. Tap each card to reveal its message.' : 'Focus on a question, then cast the reading.'}
+      {isCasting ? `${fallenCount}/78 marbles have dropped into the center. ${revealedCount}/3 cards revealed.` : isRevealed ? 'The Moonwell has spoken. Tap each card to reveal its message.' : 'Focus on a question, then cast the reading.'}
     </section>
 
     <section className="spread" aria-live="polite">
-      {!isRevealed ? positions.map((p, i) => <div className="empty-card" key={p.key}><span>{i+1}</span><h3>{p.label}</h3><p>{isCasting ? 'Hidden in the spinning marbles...' : p.prompt}</p></div>) : reading.map((item, i) => <ReadingCard key={item.key + item.card.id} item={item} index={i} flipped={flippedCards[i]} onFlip={() => flipCard(i)} />)}
+      {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={flippedCards[i]} onFlip={() => flipCard(i)} /> : <div className="empty-card" key={p.key}><span>{i+1}</span><h3>{p.label}</h3><p>{isCasting ? 'Waiting for its marble to fall...' : p.prompt}</p></div>)}
     </section>
   </main>;
 }
