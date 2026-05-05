@@ -75,14 +75,24 @@ function MarbleWheel({ reading, activeIndex, fallenCount, isCasting, spinTime })
   </div>;
 }
 
-function ReadingCard({ item, index }) {
-  return <article className="reading-card" style={{ '--i': index }}>
-    <div className="position">{item.label}</div>
-    <h3>{item.card.name}</h3>
-    <p className="arcana">{item.card.arcana}{item.card.element ? ` · ${item.card.element}` : ''}</p>
-    <p>{item.line}</p>
-    <p className="meaning"><strong>Oracle:</strong> {item.card.meaning}.</p>
-  </article>;
+function ReadingCard({ item, index, flipped, onFlip }) {
+  return <button className={`tarot-flip ${flipped ? 'is-flipped' : ''}`} style={{ '--i': index }} onClick={onFlip} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
+    <span className="tarot-inner">
+      <span className="tarot-face tarot-front">
+        <span className="position">{item.label}</span>
+        <span className="card-sigil">{item.card.sigil}</span>
+        <span className="card-name">{item.card.name}</span>
+        <span className="arcana">{item.card.arcana}{item.card.element ? ` · ${item.card.element}` : ''}</span>
+        <span className="tap-hint">Tap to reveal</span>
+      </span>
+      <span className="tarot-face tarot-back">
+        <span className="position">{item.label}</span>
+        <span className="card-name">{item.card.name}</span>
+        <span className="reading-line">{item.line}</span>
+        <span className="meaning"><strong>Oracle:</strong> {item.card.meaning}.</span>
+      </span>
+    </span>
+  </button>;
 }
 
 function App() {
@@ -91,6 +101,7 @@ function App() {
   const [fallenCount, setFallenCount] = useState(0);
   const [phase, setPhase] = useState('idle');
   const [spinTime, setSpinTime] = useState(10000);
+  const [flippedCards, setFlippedCards] = useState([false, false, false]);
   const timers = useRef([]);
   const seedStars = useMemo(() => Array.from({ length: 90 }, (_, i) => ({ left: Math.random()*100, top: Math.random()*100, delay: Math.random()*5, size: Math.random()*2+1, id: i })), []);
 
@@ -107,6 +118,7 @@ function App() {
     setReading(next);
     setActiveIndex(-1);
     setFallenCount(0);
+    setFlippedCards([false, false, false]);
     setPhase('casting');
 
     [0,1,2].forEach(i => {
@@ -121,6 +133,7 @@ function App() {
 
   const isCasting = phase === 'casting';
   const isRevealed = phase === 'revealed';
+  const flipCard = index => setFlippedCards(cards => cards.map((isFlipped, i) => i === index ? !isFlipped : isFlipped));
 
   return <main>
     <div className="stars">{seedStars.map(s => <i key={s.id} style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}</div>
@@ -134,11 +147,11 @@ function App() {
     <MarbleWheel reading={reading} activeIndex={activeIndex} fallenCount={fallenCount} isCasting={isCasting} spinTime={spinTime} />
 
     <section className="ritual-status" aria-live="polite">
-      {isCasting ? fallenCount ? `The chosen marbles are surfacing... ${fallenCount}/3` : 'All 78 marbles are spiraling into the center...' : isRevealed ? 'The Moonwell has spoken.' : 'Focus on a question, then cast the reading.'}
+      {isCasting ? fallenCount ? `The chosen marbles are surfacing... ${fallenCount}/3` : 'All 78 marbles are spiraling into the center...' : isRevealed ? 'The Moonwell has spoken. Tap each card to reveal its message.' : 'Focus on a question, then cast the reading.'}
     </section>
 
     <section className="spread" aria-live="polite">
-      {!isRevealed ? positions.map((p, i) => <div className="empty-card" key={p.key}><span>{i+1}</span><h3>{p.label}</h3><p>{isCasting ? 'Hidden in the spinning marbles...' : p.prompt}</p></div>) : reading.map((item, i) => <ReadingCard key={item.key + item.card.id} item={item} index={i} />)}
+      {!isRevealed ? positions.map((p, i) => <div className="empty-card" key={p.key}><span>{i+1}</span><h3>{p.label}</h3><p>{isCasting ? 'Hidden in the spinning marbles...' : p.prompt}</p></div>) : reading.map((item, i) => <ReadingCard key={item.key + item.card.id} item={item} index={i} flipped={flippedCards[i]} onFlip={() => flipCard(i)} />)}
     </section>
   </main>;
 }
