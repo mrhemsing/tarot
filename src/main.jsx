@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Sparkles, Moon, RotateCcw } from 'lucide-react';
+import { Sparkles, RotateCcw } from 'lucide-react';
 import './styles.css';
 
 const major = [
@@ -94,6 +94,25 @@ function pickReading() {
   return chosen.map((card, i) => ({ ...positions[i], card, line: phrases[positions[i].key][Math.floor(Math.random() * 3)] }));
 }
 
+function getMoonPhase(date = new Date()) {
+  const phases = [
+    { name: 'New Moon', symbol: '🌑' },
+    { name: 'Waxing Crescent', symbol: '🌒' },
+    { name: 'First Quarter', symbol: '🌓' },
+    { name: 'Waxing Gibbous', symbol: '🌔' },
+    { name: 'Full Moon', symbol: '🌕' },
+    { name: 'Waning Gibbous', symbol: '🌖' },
+    { name: 'Last Quarter', symbol: '🌗' },
+    { name: 'Waning Crescent', symbol: '🌘' }
+  ];
+  const knownNewMoon = Date.UTC(2000, 0, 6, 18, 14);
+  const lunarCycle = 29.530588853;
+  const daysSince = (date.getTime() - knownNewMoon) / 86400000;
+  const age = ((daysSince % lunarCycle) + lunarCycle) % lunarCycle;
+  const index = Math.floor((age / lunarCycle) * 8 + 0.5) % 8;
+  return { ...phases[index], age: Math.round(age * 10) / 10 };
+}
+
 function buildDropOrder(reading) {
   const selected = reading.map(r => r.card.id);
   const selectedSet = new Set(selected);
@@ -106,6 +125,7 @@ function buildDropOrder(reading) {
 
 function MarbleWheel({ reading, activeMarbleId, droppedIds, isCasting }) {
   const selectedIds = new Set(reading.map(r => r.card.id));
+  const moonPhase = useMemo(() => getMoonPhase(), []);
   return <div className={`wheel-wrap ${isCasting ? 'casting' : ''}`} aria-label="Zoetrope wishing well with 78 tarot marbles dropping into the center one by one">
     <div className="aura" />
     <div className="wheel">
@@ -120,7 +140,10 @@ function MarbleWheel({ reading, activeMarbleId, droppedIds, isCasting }) {
           style={{ '--angle': `${angle}deg`, '--delay': `${index * -0.035}s`, '--gem-hi': card.gemColors[0], '--gem-mid': card.gemColors[1], '--gem-core': card.gemColors[2], '--gem-shadow': card.gemColors[3], '--stone-shape': card.stoneShape, '--stone-size': `${card.stoneSize}px`, '--stone-scale-x': card.stoneScaleX, '--stone-scale-y': card.stoneScaleY, '--shine-x': `${card.shineX}%`, '--shine-y': `${card.shineY}%`, '--facet-turn': card.facetTurn }}
         ><span>{card.sigil}</span></div>;
       })}
-      <div className="well-mouth"><Moon size={34}/><span>Moonwell</span></div>
+      <div className="well-mouth" title={`Current moon phase: ${moonPhase.name}`}>
+        <span className="moon-symbol" aria-hidden="true">{moonPhase.symbol}</span>
+        <span className="moon-label">{moonPhase.name}</span>
+      </div>
     </div>
   </div>;
 }
