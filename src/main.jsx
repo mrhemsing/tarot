@@ -193,7 +193,6 @@ function ReadingCard({ item, index, flipped, onFlip }) {
   return <button className={`tarot-flip ${flipped ? 'is-flipped' : ''}`} style={{ '--i': index }} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={handleClick} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
     <span className="tarot-inner">
       <span className="tarot-face tarot-front art-front">
-        <span className="flip-control" aria-hidden="true"><RotateCcw size={16} /></span>
         <span className="position">{item.label}</span>
         <img className="rws-card-art" src={item.card.image} alt={item.card.name} draggable="false" />
         <span className="tap-hint">Tap to reveal</span>
