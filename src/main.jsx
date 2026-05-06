@@ -381,6 +381,10 @@ function App() {
     <div className="stars">{seedStars.map(s => <i key={s.id} style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}</div>
     <TarotWheel reading={reading} ritualState={ritualState} chargeProgress={chargeProgress} />
 
+    {spotlightCardIndex !== null && reading[spotlightCardIndex] && <div className="mobile-reveal-stage" aria-hidden="true">
+      <ReadingCard item={reading[spotlightCardIndex]} index={spotlightCardIndex} flipped={false} spotlight={true} onFlip={() => {}} />
+    </div>}
+
     <section className="ritual-status" aria-live="polite">
       {chargeText}
     </section>
@@ -391,7 +395,7 @@ function App() {
     </button>
 
     <section className="spread" aria-live="polite">
-      {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={flippedCards[i]} spotlight={spotlightCardIndex === i} onFlip={() => flipCard(i)} /> : <div className="empty-card" key={p.key}><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
+      {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={flippedCards[i]} spotlight={false} onFlip={() => flipCard(i)} /> : <div className="empty-card" key={p.key}><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
     </section>
 
     {reading.length > 0 && <section className="hero compact cast-again"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><RotateCcw size={18}/> Cast Again</button></section>}
