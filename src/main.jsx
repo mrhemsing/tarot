@@ -192,10 +192,11 @@ function ReadingCard({ item, index, flipped, spotlight, onFlip }) {
   return <button className={`tarot-flip ${flipped ? 'is-flipped' : ''} ${spotlight ? 'is-spotlight' : ''}`} style={{ '--i': index }} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={handleClick} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
     <span className="tarot-inner">
       <span className="tarot-face tarot-front art-front">
+        <span className="casino-burst" aria-hidden="true"><i/><i/><i/><i/><i/><i/></span>
         <span className="spotlight-kicker">{item.label}</span>
         <span className="spotlight-title">{item.card.name}</span>
         <span className="position">{item.label}</span>
-        <img className="rws-card-art" src={item.card.image} alt={item.card.name} draggable="false" />
+        <span className="spotlight-card-frame"><img className="rws-card-art" src={item.card.image} alt={item.card.name} draggable="false" /></span>
         <span className="tap-hint">Tap to reveal</span>
       </span>
       <span className="tarot-face tarot-back">
