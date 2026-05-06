@@ -84,6 +84,13 @@ const positions = [
   { key: 'future', label: 'Future', prompt: 'what wants to become visible next' }
 ];
 
+const preloadImage = src => new Promise(resolve => {
+  const image = new Image();
+  image.onload = resolve;
+  image.onerror = resolve;
+  image.src = src;
+});
+
 const phrases = {
   past: ['This card rises from the old water, showing the pattern that set the spell in motion.', 'Behind you, the wheel remembers a lesson that still hums under the surface.', 'The first chosen card carries an echo from the path already walked.'],
   present: ['At the center of the wheel, this is the energy asking for your attention now.', 'The current moment glows around this card; it is the hinge of the reading.', 'This card lands with the pulse of the present spell.'],
@@ -180,7 +187,7 @@ function cardAnalysis(item) {
   ];
 }
 
-function ReadingCard({ item, index, flipped, spotlight, fullScreen, onFlip, cardRef, returnVector }) {
+function ReadingCard({ item, index, flipped, spotlight, fullScreen, showArt, onFlip, onToggleArt, cardRef, returnVector }) {
   const analysis = cardAnalysis(item);
   const handleClick = event => {
     if (event.target.closest('.flip-control')) {
@@ -192,9 +199,14 @@ function ReadingCard({ item, index, flipped, spotlight, fullScreen, onFlip, card
     onFlip(event.currentTarget);
   };
   const vector = returnVector || { x: '0px', y: '-52vh' };
-  return <div ref={cardRef} className={`tarot-flip ${flipped ? 'is-flipped' : ''} ${spotlight ? 'is-spotlight' : ''} ${fullScreen ? 'is-fullscreen-detail' : ''}`} style={{ '--i': index, '--return-x': vector.x, '--return-y': vector.y }} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={handleClick} role="button" tabIndex={0} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
+  const controls = fullScreen ? <span className="detail-controls">
+    <span className="flip-control art-toggle-control" aria-label={showArt ? 'Show reading' : 'Show full art'} onClick={event => { event.stopPropagation(); onToggleArt?.(); }}><FlipHorizontal size={18} /></span>
+    <span className="flip-control close-control" aria-label="Close" onClick={event => { event.stopPropagation(); onFlip(); }}>×</span>
+  </span> : null;
+  return <div ref={cardRef} className={`tarot-flip ${flipped ? 'is-flipped' : ''} ${spotlight ? 'is-spotlight' : ''} ${fullScreen ? 'is-fullscreen-detail' : ''} ${showArt ? 'is-showing-art' : ''}`} style={{ '--i': index, '--return-x': vector.x, '--return-y': vector.y }} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={handleClick} role="button" tabIndex={0} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
     <span className="tarot-inner">
       <span className="tarot-face tarot-front art-front">
+        {controls}
         <span className="casino-burst" aria-hidden="true"><i/><i/><i/><i/><i/><i/></span>
         <span className="spotlight-kicker">{item.label}</span>
         <span className="spotlight-title">{item.card.name}</span>
@@ -203,7 +215,7 @@ function ReadingCard({ item, index, flipped, spotlight, fullScreen, onFlip, card
 
       </span>
       <span className="tarot-face tarot-back">
-        <span className="flip-control" aria-hidden="true">{fullScreen ? '×' : <FlipHorizontal size={16} />}</span>
+        {fullScreen ? controls : <span className="flip-control" aria-hidden="true"><FlipHorizontal size={16} /></span>}
         <div className="card-scroll" onClick={event => event.stopPropagation()}>
           <span className="position">{item.label}</span>
           <span className="card-name">{item.card.name}</span>
@@ -226,8 +238,10 @@ function App() {
   const [spotlightCardIndex, setSpotlightCardIndex] = useState(null);
   const [openCardIndex, setOpenCardIndex] = useState(null);
   const [isClosingDetail, setIsClosingDetail] = useState(false);
+  const [detailShowsArt, setDetailShowsArt] = useState(false);
   const [detailOrigin, setDetailOrigin] = useState({ x: 0, y: 0, scale: 0.28 });
   const [returnClones, setReturnClones] = useState([]);
+  const [assetsReady, setAssetsReady] = useState(false);
   const timers = useRef([]);
   const hapticTimer = useRef(null);
   const progressTimer = useRef(null);
@@ -236,6 +250,19 @@ function App() {
   const castStarted = useRef(false);
   const cardRefs = useRef([]);
   const seedStars = useMemo(() => Array.from({ length: 120 }, (_, i) => ({ left: Math.random()*100, top: Math.random()*100, delay: Math.random()*5, size: Math.random()*2+1, id: i })), []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const criticalAssets = ['/tarot-wheel.webp', ...deck.map(card => card.image)];
+    Promise.all([
+      ...criticalAssets.map(preloadImage),
+      document.fonts?.ready?.catch?.(() => undefined) || Promise.resolve(),
+      new Promise(resolve => setTimeout(resolve, 450))
+    ]).then(() => {
+      if (!cancelled) setAssetsReady(true);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     const clearSelection = () => window.getSelection?.().removeAllRanges();
@@ -413,6 +440,7 @@ function App() {
       });
     }
     setIsClosingDetail(false);
+    setDetailShowsArt(false);
     setOpenCardIndex(index);
   };
   const closeDetail = () => {
@@ -420,12 +448,18 @@ function App() {
     timers.current.push(setTimeout(() => {
       setOpenCardIndex(null);
       setIsClosingDetail(false);
+      setDetailShowsArt(false);
     }, 620));
   };
 
-  return <main className={`app ${ritualState}`} onContextMenu={event => event.preventDefault()} onSelect={event => event.preventDefault()} onSelectStart={event => event.preventDefault()}>
+  return <main className={`app ${ritualState} ${assetsReady ? 'assets-ready' : 'is-preloading'}`} onContextMenu={event => event.preventDefault()} onSelect={event => event.preventDefault()} onSelectStart={event => event.preventDefault()}>
+    {!assetsReady && <div className="preloader" role="status" aria-live="polite">
+      <div className="preloader-copy">Opening the wheel…</div>
+    </div>}
     <div className="stars">{seedStars.map(s => <i key={s.id} style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}</div>
     <TarotWheel reading={reading} ritualState={ritualState} chargeProgress={chargeProgress} />
+
+    <a className="average-badge" href="https://b-average.com" target="_blank" rel="noreferrer" aria-label="B Average">B AVERAGE</a>
 
     {spotlightCardIndex !== null && reading[spotlightCardIndex] && <div className="mobile-reveal-stage" aria-hidden="true">
       <ReadingCard key={`${spotlightCardIndex}-${reading[spotlightCardIndex].card.id}`} item={reading[spotlightCardIndex]} index={spotlightCardIndex} flipped={false} spotlight={true} onFlip={() => {}} />
@@ -451,10 +485,10 @@ function App() {
     </div>}
 
     {openCardIndex !== null && reading[openCardIndex] && <div className={`detail-stage ${isClosingDetail ? 'is-closing' : ''}`} style={{ '--origin-x': `${detailOrigin.x}px`, '--origin-y': `${detailOrigin.y}px`, '--origin-scale': detailOrigin.scale }} role="dialog" aria-modal="true" aria-label={`${reading[openCardIndex].label}: ${reading[openCardIndex].card.name}`}>
-      <ReadingCard item={reading[openCardIndex]} index={openCardIndex} flipped={true} spotlight={false} fullScreen={true} onFlip={closeDetail} />
+      <ReadingCard item={reading[openCardIndex]} index={openCardIndex} flipped={!detailShowsArt} spotlight={false} fullScreen={true} showArt={detailShowsArt} onToggleArt={() => setDetailShowsArt(value => !value)} onFlip={closeDetail} />
     </div>}
 
-    {reading.length > 0 && <section className="hero compact cast-again"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><span aria-hidden="true">🔮</span> Cast Again</button></section>}
+    {reading.length > 0 && <section className="hero compact cast-again"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><span aria-hidden="true">✨</span> Cast Again</button></section>}
   </main>;
 }
 
