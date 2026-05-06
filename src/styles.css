@@ -323,10 +323,10 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
   .detail-stage { padding: 0; }
   .detail-stage .tarot-flip.is-fullscreen-detail { width: 100vw; min-height: 100dvh; }
   .detail-stage .tarot-flip.is-fullscreen-detail .tarot-inner { min-height: 100dvh; }
-  .detail-stage .tarot-flip.is-fullscreen-detail .tarot-back { border-radius: 0; padding: max(28px, env(safe-area-inset-top)) 20px max(28px, env(safe-area-inset-bottom)) 22px; }
+  .detail-stage .tarot-flip.is-fullscreen-detail .tarot-back { border-radius: 0; padding: max(32px, env(safe-area-inset-top)) 24px max(32px, env(safe-area-inset-bottom)) 28px; }
   .detail-stage .tarot-flip.is-fullscreen-detail .flip-control { right: max(28px, env(safe-area-inset-right)); }
   .detail-stage .tarot-flip.is-fullscreen-detail .detail-controls { top: max(28px, env(safe-area-inset-top)); right: max(28px, env(safe-area-inset-right)); gap: 5px; }
   .detail-stage .tarot-flip.is-fullscreen-detail .detail-controls .flip-control { width: 42px; height: 42px; }
   .detail-stage .tarot-flip.is-fullscreen-detail.is-showing-art .art-front { padding: max(84px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)); }
-  .detail-stage .tarot-flip.is-fullscreen-detail .card-scroll { padding: 4px 54px 38px 0; }
+  .detail-stage .tarot-flip.is-fullscreen-detail .card-scroll { padding: 8px 62px 42px 10px; }
 }
