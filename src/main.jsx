@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Sparkles, RotateCcw } from 'lucide-react';
+import { Sparkles, FlipHorizontal } from 'lucide-react';
 import './styles.css';
 
 const major = [
@@ -144,6 +144,7 @@ function TarotWheel({ reading, ritualState, chargeProgress }) {
   const isActiveRitual = ['charging', 'building', 'charged', 'collapse', 'selected', 'revealing', 'returning'].includes(ritualState);
   return <div className={`wheel-wrap ${ritualState} ${isActiveRitual ? 'casting' : ''}`} style={{ '--charge': chargeProgress }} aria-label="Tarot wheel choosing three cards">
     <div className="aura" />
+    <div className="site-title" aria-hidden="true"><span>MOONWELL</span><span>TAROT</span></div>
     <div className="wheel">
       {deck.map((card, index) => {
         const angle = (360 / deck.length) * index;
@@ -179,7 +180,7 @@ function cardAnalysis(item) {
   ];
 }
 
-function ReadingCard({ item, index, flipped, spotlight, onFlip }) {
+function ReadingCard({ item, index, flipped, spotlight, fullScreen, onFlip, cardRef, returnVector }) {
   const analysis = cardAnalysis(item);
   const handleClick = event => {
     if (event.target.closest('.flip-control')) {
@@ -187,9 +188,11 @@ function ReadingCard({ item, index, flipped, spotlight, onFlip }) {
       return;
     }
     if (event.target.closest('.card-scroll')) return;
-    onFlip();
+    if (fullScreen) return;
+    onFlip(event.currentTarget);
   };
-  return <button className={`tarot-flip ${flipped ? 'is-flipped' : ''} ${spotlight ? 'is-spotlight' : ''}`} style={{ '--i': index }} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={handleClick} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
+  const vector = returnVector || { x: '0px', y: '-52vh' };
+  return <div ref={cardRef} className={`tarot-flip ${flipped ? 'is-flipped' : ''} ${spotlight ? 'is-spotlight' : ''} ${fullScreen ? 'is-fullscreen-detail' : ''}`} style={{ '--i': index, '--return-x': vector.x, '--return-y': vector.y }} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={handleClick} role="button" tabIndex={0} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
     <span className="tarot-inner">
       <span className="tarot-face tarot-front art-front">
         <span className="casino-burst" aria-hidden="true"><i/><i/><i/><i/><i/><i/></span>
@@ -197,36 +200,41 @@ function ReadingCard({ item, index, flipped, spotlight, onFlip }) {
         <span className="spotlight-title">{item.card.name}</span>
         <span className="position">{item.label}</span>
         <span className="spotlight-card-frame"><img className="rws-card-art" src={item.card.image} alt={item.card.name} draggable="false" /></span>
-        <span className="tap-hint">Tap to reveal</span>
+
       </span>
       <span className="tarot-face tarot-back">
-        <span className="flip-control" aria-hidden="true"><RotateCcw size={16} /></span>
-        <span className="card-scroll">
+        <span className="flip-control" aria-hidden="true">{fullScreen ? '×' : <FlipHorizontal size={16} />}</span>
+        <div className="card-scroll" onClick={event => event.stopPropagation()}>
           <span className="position">{item.label}</span>
           <span className="card-name">{item.card.name}</span>
           <span className="reading-line">{item.line}</span>
-          <span className="analysis-label">ChatGPT-style analysis</span>
           {analysis.map((paragraph, paragraphIndex) => <span className="analysis-copy" key={paragraphIndex}>{paragraph}</span>)}
           <span className="meaning"><strong>Keywords:</strong> {item.card.meaning}.</span>
-        </span>
+        </div>
       </span>
     </span>
-  </button>;
+  </div>;
 }
 
 function App() {
   const [reading, setReading] = useState([]);
   const [revealedCount, setRevealedCount] = useState(0);
   const [ritualState, setRitualState] = useState('idle');
-  const [chargeText, setChargeText] = useState('Focus on a question, then press and hold the moon.');
+  const [chargeText, setChargeText] = useState('Focus on a question,\nthen press and hold the moon.');
   const [chargeProgress, setChargeProgress] = useState(0);
   const [flippedCards, setFlippedCards] = useState([false, false, false]);
   const [spotlightCardIndex, setSpotlightCardIndex] = useState(null);
+  const [openCardIndex, setOpenCardIndex] = useState(null);
+  const [isClosingDetail, setIsClosingDetail] = useState(false);
+  const [detailOrigin, setDetailOrigin] = useState({ x: 0, y: 0, scale: 0.28 });
+  const [returnClones, setReturnClones] = useState([]);
   const timers = useRef([]);
   const hapticTimer = useRef(null);
   const progressTimer = useRef(null);
   const holdStart = useRef(0);
   const pointerSeed = useRef({ x: 0, y: 0 });
+  const castStarted = useRef(false);
+  const cardRefs = useRef([]);
   const seedStars = useMemo(() => Array.from({ length: 120 }, (_, i) => ({ left: Math.random()*100, top: Math.random()*100, delay: Math.random()*5, size: Math.random()*2+1, id: i })), []);
 
   useEffect(() => {
@@ -266,11 +274,14 @@ function App() {
     vibrate(18);
     holdStart.current = performance.now();
     pointerSeed.current = { x: Math.round(event.clientX || 0), y: Math.round(event.clientY || 0) };
+    castStarted.current = false;
     setReading([]);
     setRevealedCount(0);
     setChargeProgress(0);
     setFlippedCards([false, false, false]);
     setSpotlightCardIndex(null);
+    setOpenCardIndex(null);
+    setIsClosingDetail(false);
     setRitualState('charging');
     setChargeText('The moon wakes the wheel… keep holding.');
     progressTimer.current = setInterval(() => {
@@ -288,13 +299,37 @@ function App() {
       hapticTimer.current = setInterval(() => vibrate(12), 300);
     }, 1200));
     timers.current.push(setTimeout(() => {
-      setRitualState(state => ['charging', 'building'].includes(state) ? 'charged' : state);
-      setChargeProgress(1);
-      setChargeText('Activated — release to choose.');
-      if (hapticTimer.current) clearInterval(hapticTimer.current);
-      hapticTimer.current = setInterval(() => vibrate([12, 25, 18]), 220);
-      vibrate([18, 35, 28]);
+      const holdDuration = Math.round(performance.now() - holdStart.current);
+      chooseCards(pointerSeed.current.x, pointerSeed.current.y, holdDuration);
     }, 5000));
+  };
+
+  const chooseCards = (x, y, holdDuration = 5000) => {
+    if (castStarted.current) return;
+    castStarted.current = true;
+    clearTimers();
+    setChargeProgress(1);
+    const next = pickReading(`${holdDuration}:${x}:${y}:${Date.now()}`);
+    vibrate([30, 55, 45]);
+    setReading(next);
+    setChargeProgress(1);
+    setRevealedCount(0);
+    setRitualState('revealing');
+    setChargeText('Your path is opening…');
+
+    [0, 3000, 6000].forEach((delay, index) => {
+      timers.current.push(setTimeout(() => {
+        setSpotlightCardIndex(index);
+        setChargeText(`${positions[index].label} card revealed.`);
+        vibrate(index === 2 ? [18, 35, 28] : 16);
+      }, delay));
+    });
+    timers.current.push(setTimeout(() => {
+      setSpotlightCardIndex(null);
+      setRevealedCount(3);
+      setRitualState('done');
+      setChargeText('Your full spread is below: Past, Present, Future. Tap each card to read it.');
+    }, 9100));
   };
 
   const releaseCharge = event => {
@@ -302,48 +337,13 @@ function App() {
     event.stopPropagation();
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     window.getSelection?.().removeAllRanges();
-    if (!['charging', 'building', 'charged'].includes(ritualState)) return;
-    const holdDuration = Math.round(performance.now() - holdStart.current);
-    if (ritualState !== 'charged' || holdDuration < 5000) {
-      clearTimers();
-      vibrate([10, 35, 10]);
-      setRitualState('idle');
-      setChargeProgress(0);
-      setChargeText('Hold the moon for the full 5 seconds.');
-      return;
-    }
+    if (castStarted.current) return;
+    if (!['charging', 'building'].includes(ritualState)) return;
     clearTimers();
-    const x = Math.round(event.clientX || pointerSeed.current.x);
-    const y = Math.round(event.clientY || pointerSeed.current.y);
-    const next = pickReading(`${holdDuration}:${x}:${y}:${Date.now()}`);
-    vibrate([30, 55, 45]);
-    setReading(next);
-    setChargeProgress(1);
-    setRitualState('collapse');
-    setChargeText('Three cards hesitate… then fall inward.');
-
-    timers.current.push(setTimeout(() => {
-      setRitualState('selected');
-      setChargeText('Gravity has selected your three cards.');
-      vibrate(25);
-    }, 850));
-    timers.current.push(setTimeout(() => {
-      setRitualState('revealing');
-      setChargeText('Your path is opening…');
-    }, 1400));
-    [0, 2200, 4400].forEach((delay, index) => {
-      timers.current.push(setTimeout(() => {
-        setRevealedCount(index + 1);
-        setSpotlightCardIndex(index);
-        setChargeText(`${positions[index].label} card revealed.`);
-        vibrate(index === 2 ? [18, 35, 28] : 16);
-      }, 1650 + delay));
-    });
-    timers.current.push(setTimeout(() => {
-      setSpotlightCardIndex(null);
-      setRitualState('done');
-      setChargeText('Your path has been revealed. Tap each card to read it.');
-    }, 8350));
+    vibrate([10, 35, 10]);
+    setRitualState('idle');
+    setChargeProgress(0);
+    setChargeText('Hold the moon for the full 5 seconds.');
   };
 
   const resetRitual = () => {
@@ -351,7 +351,28 @@ function App() {
     if (reading.length > 0) {
       setFlippedCards([false, false, false]);
       setSpotlightCardIndex(null);
-      setRevealedCount(3);
+      setOpenCardIndex(null);
+      const wheelRect = document.querySelector('.wheel')?.getBoundingClientRect();
+      if (wheelRect) {
+        const wheelCenter = { x: wheelRect.left + wheelRect.width / 2, y: wheelRect.top + wheelRect.height / 2 };
+        setReturnClones(reading.map((item, index) => {
+          const rect = cardRefs.current[index]?.getBoundingClientRect();
+          if (!rect) return null;
+          return {
+            key: `${item.key}-${item.card.id}-return`,
+            image: item.card.image,
+            name: item.card.name,
+            index,
+            left: `${Math.round(rect.left)}px`,
+            top: `${Math.round(rect.top)}px`,
+            width: `${Math.round(rect.width)}px`,
+            height: `${Math.round(rect.height)}px`,
+            x: `${Math.round(wheelCenter.x - (rect.left + rect.width / 2))}px`,
+            y: `${Math.round(wheelCenter.y - (rect.top + rect.height / 2))}px`
+          };
+        }).filter(Boolean));
+      }
+      setRevealedCount(0);
       setChargeProgress(0);
       setRitualState('returning');
       setChargeText('The cards rise back to the crown of the wheel.');
@@ -359,30 +380,55 @@ function App() {
       timers.current.push(setTimeout(() => {
         setReading([]);
         setRevealedCount(0);
+        setReturnClones([]);
+        setOpenCardIndex(null);
+        setIsClosingDetail(false);
         setRitualState('idle');
-        setChargeText('Focus on a question, then press and hold the moon.');
-      }, 820));
+        setChargeText('Focus on a question,\nthen press and hold the moon.');
+      }, 1250));
       return;
     }
     setReading([]);
     setRevealedCount(0);
+    setReturnClones([]);
     setChargeProgress(0);
     setFlippedCards([false, false, false]);
     setSpotlightCardIndex(null);
+    setOpenCardIndex(null);
+    setIsClosingDetail(false);
     setRitualState('idle');
-    setChargeText('Focus on a question, then press and hold the moon.');
+    setChargeText('Focus on a question,\nthen press and hold the moon.');
   };
 
   const isRitualActive = ['charging', 'building', 'charged', 'collapse', 'selected', 'revealing', 'returning'].includes(ritualState);
   const moonPhase = useMemo(() => getMoonPhase(), []);
-  const flipCard = index => setFlippedCards(cards => cards.map((isFlipped, i) => i === index ? !isFlipped : isFlipped));
+  const flipCard = (index, sourceElement) => {
+    if (sourceElement && typeof window !== 'undefined') {
+      const rect = sourceElement.getBoundingClientRect();
+      const targetWidth = Math.min(window.innerWidth, 760);
+      setDetailOrigin({
+        x: rect.left + rect.width / 2 - window.innerWidth / 2,
+        y: rect.top + rect.height / 2 - window.innerHeight / 2,
+        scale: Math.min(0.5, Math.max(0.18, rect.width / targetWidth))
+      });
+    }
+    setIsClosingDetail(false);
+    setOpenCardIndex(index);
+  };
+  const closeDetail = () => {
+    setIsClosingDetail(true);
+    timers.current.push(setTimeout(() => {
+      setOpenCardIndex(null);
+      setIsClosingDetail(false);
+    }, 620));
+  };
 
   return <main className={`app ${ritualState}`} onContextMenu={event => event.preventDefault()} onSelect={event => event.preventDefault()} onSelectStart={event => event.preventDefault()}>
     <div className="stars">{seedStars.map(s => <i key={s.id} style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}</div>
     <TarotWheel reading={reading} ritualState={ritualState} chargeProgress={chargeProgress} />
 
     {spotlightCardIndex !== null && reading[spotlightCardIndex] && <div className="mobile-reveal-stage" aria-hidden="true">
-      <ReadingCard item={reading[spotlightCardIndex]} index={spotlightCardIndex} flipped={false} spotlight={true} onFlip={() => {}} />
+      <ReadingCard key={`${spotlightCardIndex}-${reading[spotlightCardIndex].card.id}`} item={reading[spotlightCardIndex]} index={spotlightCardIndex} flipped={false} spotlight={true} onFlip={() => {}} />
     </div>}
 
     <section className="ritual-status" aria-live="polite">
@@ -395,10 +441,20 @@ function App() {
     </button>
 
     <section className="spread" aria-live="polite">
-      {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={flippedCards[i]} spotlight={false} onFlip={() => flipCard(i)} /> : <div className="empty-card" key={p.key}><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
+      {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={false} spotlight={false} cardRef={element => { cardRefs.current[i] = element; }} onFlip={sourceElement => flipCard(i, sourceElement)} /> : <div className="empty-card" key={p.key}><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
     </section>
 
-    {reading.length > 0 && <section className="hero compact cast-again"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><RotateCcw size={18}/> Cast Again</button></section>}
+    {returnClones.length > 0 && <div className="return-clones" aria-hidden="true">
+      {returnClones.map(clone => <div className="return-clone" key={clone.key} style={{ '--i': clone.index, '--return-x': clone.x, '--return-y': clone.y, left: clone.left, top: clone.top, width: clone.width, height: clone.height }}>
+        <img src={clone.image} alt="" draggable="false" />
+      </div>)}
+    </div>}
+
+    {openCardIndex !== null && reading[openCardIndex] && <div className={`detail-stage ${isClosingDetail ? 'is-closing' : ''}`} style={{ '--origin-x': `${detailOrigin.x}px`, '--origin-y': `${detailOrigin.y}px`, '--origin-scale': detailOrigin.scale }} role="dialog" aria-modal="true" aria-label={`${reading[openCardIndex].label}: ${reading[openCardIndex].card.name}`}>
+      <ReadingCard item={reading[openCardIndex]} index={openCardIndex} flipped={true} spotlight={false} fullScreen={true} onFlip={closeDetail} />
+    </div>}
+
+    {reading.length > 0 && <section className="hero compact cast-again"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><span aria-hidden="true">🔮</span> Cast Again</button></section>}
   </main>;
 }
 
