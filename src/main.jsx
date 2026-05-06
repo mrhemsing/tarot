@@ -179,7 +179,7 @@ function cardAnalysis(item) {
   ];
 }
 
-function ReadingCard({ item, index, flipped, onFlip }) {
+function ReadingCard({ item, index, flipped, spotlight, onFlip }) {
   const analysis = cardAnalysis(item);
   const handleClick = event => {
     if (event.target.closest('.flip-control')) {
@@ -189,7 +189,7 @@ function ReadingCard({ item, index, flipped, onFlip }) {
     if (event.target.closest('.card-scroll')) return;
     onFlip();
   };
-  return <button className={`tarot-flip ${flipped ? 'is-flipped' : ''}`} style={{ '--i': index }} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={handleClick} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
+  return <button className={`tarot-flip ${flipped ? 'is-flipped' : ''} ${spotlight ? 'is-spotlight' : ''}`} style={{ '--i': index }} onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={handleClick} aria-label={`${flipped ? 'Reading for' : 'Reveal'} ${item.label}: ${item.card.name}`}>
     <span className="tarot-inner">
       <span className="tarot-face tarot-front art-front">
         <span className="position">{item.label}</span>
@@ -218,6 +218,7 @@ function App() {
   const [chargeText, setChargeText] = useState('Focus on a question, then press and hold the moon.');
   const [chargeProgress, setChargeProgress] = useState(0);
   const [flippedCards, setFlippedCards] = useState([false, false, false]);
+  const [spotlightCardIndex, setSpotlightCardIndex] = useState(null);
   const timers = useRef([]);
   const hapticTimer = useRef(null);
   const progressTimer = useRef(null);
@@ -266,6 +267,7 @@ function App() {
     setRevealedCount(0);
     setChargeProgress(0);
     setFlippedCards([false, false, false]);
+    setSpotlightCardIndex(null);
     setRitualState('charging');
     setChargeText('The moon wakes the wheel… keep holding.');
     progressTimer.current = setInterval(() => {
@@ -326,22 +328,26 @@ function App() {
       setRitualState('revealing');
       setChargeText('Your path is opening…');
     }, 1400));
-    [350, 850, 1450].forEach((delay, index) => {
+    [0, 2200, 4400].forEach((delay, index) => {
       timers.current.push(setTimeout(() => {
         setRevealedCount(index + 1);
+        setSpotlightCardIndex(index);
+        setChargeText(`${positions[index].label} card revealed.`);
         vibrate(index === 2 ? [18, 35, 28] : 16);
-      }, 1400 + delay));
+      }, 1650 + delay));
     });
     timers.current.push(setTimeout(() => {
+      setSpotlightCardIndex(null);
       setRitualState('done');
       setChargeText('Your path has been revealed. Tap each card to read it.');
-    }, 3300));
+    }, 8350));
   };
 
   const resetRitual = () => {
     clearTimers();
     if (reading.length > 0) {
       setFlippedCards([false, false, false]);
+      setSpotlightCardIndex(null);
       setRevealedCount(3);
       setChargeProgress(0);
       setRitualState('returning');
@@ -359,6 +365,7 @@ function App() {
     setRevealedCount(0);
     setChargeProgress(0);
     setFlippedCards([false, false, false]);
+    setSpotlightCardIndex(null);
     setRitualState('idle');
     setChargeText('Focus on a question, then press and hold the moon.');
   };
@@ -381,7 +388,7 @@ function App() {
     </button>
 
     <section className="spread" aria-live="polite">
-      {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={flippedCards[i]} onFlip={() => flipCard(i)} /> : <div className="empty-card" key={p.key}><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
+      {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={flippedCards[i]} spotlight={spotlightCardIndex === i} onFlip={() => flipCard(i)} /> : <div className="empty-card" key={p.key}><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
     </section>
 
     {reading.length > 0 && <section className="hero compact cast-again"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><RotateCcw size={18}/> Cast Again</button></section>}
