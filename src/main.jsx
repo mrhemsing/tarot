@@ -508,7 +508,12 @@ function App() {
     </button>
 
     {(isRitualActive || revealedCount > 0) && <section className="spread" aria-live="polite">
-      {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} reading={reading} index={i} flipped={false} spotlight={false} cardRef={element => { cardRefs.current[i] = element; }} onFlip={sourceElement => flipCard(i, sourceElement)} /> : <div className="empty-card" key={p.key}><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
+      {positions.map((p, i) => {
+        if (revealedCount > i && reading[i]) {
+          return <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} reading={reading} index={i} flipped={false} spotlight={false} cardRef={element => { cardRefs.current[i] = element; }} onFlip={sourceElement => flipCard(i, sourceElement)} />;
+        }
+        return isRitualActive ? <div className="empty-card" key={p.key}><h3>{p.label}</h3><p>Waiting for the wheel to choose...</p></div> : null;
+      })}
     </section>}
 
     {returnClones.length > 0 && <div className="return-clones" aria-hidden="true">
