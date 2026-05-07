@@ -378,9 +378,16 @@ function App() {
     });
     timers.current.push(setTimeout(() => {
       setSpotlightCardIndex(null);
-      setRevealedCount(3);
       setRitualState('done');
       setChargeText('Your full spread is below: Past, Present, Future. Tap each card to read it.');
+      if (window.matchMedia?.('(max-width: 820px)').matches) {
+        setRevealedCount(0);
+        [1, 2, 3].forEach((count, index) => {
+          timers.current.push(setTimeout(() => setRevealedCount(count), 120 + index * 430));
+        });
+      } else {
+        setRevealedCount(3);
+      }
     }, 9100));
   };
 
