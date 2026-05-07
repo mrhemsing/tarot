@@ -380,8 +380,10 @@ function App() {
       setSpotlightCardIndex(null);
       setOpenCardIndex(null);
       const wheelRect = document.querySelector('.wheel')?.getBoundingClientRect();
-      if (wheelRect) {
-        const wheelCenter = { x: wheelRect.left + wheelRect.width / 2, y: wheelRect.top + wheelRect.height / 2 };
+      const wheelCenter = wheelRect && wheelRect.width > 0 && wheelRect.height > 0
+        ? { x: wheelRect.left + wheelRect.width / 2, y: wheelRect.top + wheelRect.height / 2 }
+        : { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+      if (wheelCenter) {
         setReturnClones(reading.map((item, index) => {
           const rect = cardRefs.current[index]?.getBoundingClientRect();
           if (!rect) return null;
