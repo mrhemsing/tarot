@@ -346,6 +346,7 @@ function App() {
     }, 1200));
     timers.current.push(setTimeout(() => {
       setRitualState(state => ['charging', 'building'].includes(state) ? 'hyper' : state);
+      setChargeText('Keep holding until the cards break through.');
       if (hapticTimer.current) clearInterval(hapticTimer.current);
       hapticTimer.current = setInterval(() => vibrate(18), 150);
     }, 3000));
