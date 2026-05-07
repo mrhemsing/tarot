@@ -56,9 +56,9 @@ main.app.idle .average-badge { display: inline-block; }
 .charging .aura { animation-duration: calc(12s - var(--charge) * 5s); filter: blur(calc(20px + var(--charge) * 8px)) brightness(calc(1.16 + var(--charge) * .45)); }
 .building .aura { animation-duration: calc(8s - var(--charge) * 3s); filter: blur(calc(24px + var(--charge) * 8px)) brightness(calc(1.35 + var(--charge) * .45)); }
 .charged .aura, .collapse .aura, .selected .aura, .revealing .aura { animation-duration: 4.8s; filter: blur(30px) brightness(1.7); }
-.charging .wheel { animation-duration: calc(34s - var(--charge) * 18s); box-shadow: inset 0 0 68px rgba(0,0,0,.68), 0 0 calc(70px + var(--charge) * 42px) rgba(255, 207, 126, .24), 0 0 calc(120px + var(--charge) * 70px) rgba(78, 180, 255, .16); }
-.building .wheel { animation-duration: calc(18s - var(--charge) * 10s); box-shadow: inset 0 0 72px rgba(0,0,0,.72), 0 0 calc(90px + var(--charge) * 55px) rgba(255, 207, 126, .3), 0 0 calc(150px + var(--charge) * 90px) rgba(78, 180, 255, .22); }
-.charged .wheel { animation-duration: 6s; box-shadow: inset 0 0 74px rgba(0,0,0,.74), 0 0 126px rgba(255, 207, 126, .34), 0 0 190px rgba(78, 180, 255, .24); }
+.charging .wheel { animation-duration: calc(30s - var(--charge) * 22s); box-shadow: inset 0 0 68px rgba(0,0,0,.68), 0 0 calc(70px + var(--charge) * 42px) rgba(255, 207, 126, .24), 0 0 calc(120px + var(--charge) * 70px) rgba(78, 180, 255, .16); }
+.building .wheel { animation-duration: calc(12s - var(--charge) * 8s); box-shadow: inset 0 0 72px rgba(0,0,0,.72), 0 0 calc(90px + var(--charge) * 55px) rgba(255, 207, 126, .3), 0 0 calc(150px + var(--charge) * 90px) rgba(78, 180, 255, .22); }
+.charged .wheel { animation-duration: 3.2s; box-shadow: inset 0 0 74px rgba(0,0,0,.74), 0 0 126px rgba(255, 207, 126, .34), 0 0 190px rgba(78, 180, 255, .24); }
 .collapse .wheel, .selected .wheel, .revealing .wheel, .done .wheel, .returning .wheel { animation-play-state: paused; }
 
 .card-slot { --radius: clamp(126px, 24vw, 202px); position: absolute; left: 50%; top: 50%; width: 2px; height: clamp(20px, 4.4vw, 35px); margin-left: -1px; margin-top: calc(clamp(20px, 4.4vw, 35px) / -2); border-radius: 999px; transform: rotate(var(--angle)) translateY(calc(var(--radius) * -1)); transform-origin: 50% calc(var(--radius) + 50%); background: linear-gradient(to bottom, transparent, rgba(255, 232, 159, .28), transparent); opacity: .22; box-shadow: 0 0 8px rgba(255, 221, 139, .08); animation: slot-breathe 3.2s ease-in-out infinite var(--delay); transition: opacity .45s ease, transform .65s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease, width .35s ease; }
@@ -188,12 +188,13 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
   main.app { max-width: min(760px, 72vw); margin: 0 auto; padding-left: clamp(14px, 1.9vw, 20px); padding-right: clamp(14px, 1.9vw, 20px); }
   main.app.returning { width: 100vw; max-width: 100vw; height: 100vh; margin: 0; padding: 0; overflow: hidden !important; contain: none; }
   main.app.revealing { width: 100vw; max-width: 100vw; height: 100vh; margin: 0; padding: 0; overflow: hidden !important; contain: none; }
-  main.app.revealing .mobile-reveal-stage { --reveal-pad-top: clamp(34px, 6vh, 66px); --reveal-pad-bottom: clamp(54px, 9vh, 96px); width: 100vw; height: 100vh; overflow: hidden; place-items: center; padding: var(--reveal-pad-top) 20px var(--reveal-pad-bottom); }
+  main.app.revealing .mobile-reveal-stage { --reveal-pad-top: clamp(34px, 6vh, 66px); --reveal-pad-bottom: clamp(96px, 15vh, 150px); width: 100vw; height: 100vh; overflow: hidden; place-items: center; padding: var(--reveal-pad-top) 20px var(--reveal-pad-bottom); }
   main.app.revealing .mobile-reveal-stage .tarot-flip.is-spotlight { width: calc(100vw - 40px); max-width: calc(100vw - 40px); min-height: calc(100vh - var(--reveal-pad-top) - var(--reveal-pad-bottom)); overflow: hidden; }
   main.app.revealing .tarot-flip.is-spotlight .tarot-inner { min-height: calc(100vh - var(--reveal-pad-top) - var(--reveal-pad-bottom)); }
   main.app.revealing .tarot-flip.is-spotlight .tarot-face { min-height: calc(100vh - var(--reveal-pad-top) - var(--reveal-pad-bottom)); }
-  main.app.revealing .tarot-flip.is-spotlight .art-front { padding-top: clamp(24px, 4vh, 44px); padding-bottom: clamp(30px, 5vh, 58px); }
-  main.app.revealing .tarot-flip.is-spotlight .spotlight-card-frame { max-height: min(58vh, 527px); }
+  main.app.revealing .tarot-flip.is-spotlight .art-front { justify-content: flex-start; padding-top: clamp(24px, 4vh, 44px); padding-bottom: clamp(72px, 12vh, 120px); }
+  main.app.revealing .tarot-flip.is-spotlight .spotlight-card-frame { height: min(40vh, 380px); max-height: min(40vh, 380px); margin-bottom: clamp(42px, 8vh, 84px); }
+  main.app.revealing .tarot-flip.is-spotlight .rws-card-art { width: auto; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; }
   main.app.idle,
   main.app.charging,
   main.app.building,
@@ -208,12 +209,12 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
   main.app.idle .ritual-status,
   main.app.charging .ritual-status,
   main.app.building .ritual-status,
-  main.app.charged .ritual-status { margin-top: auto; margin-bottom: clamp(16px, 2.6vh, 28px); }
+  main.app.charged .ritual-status { margin-top: auto; margin-bottom: clamp(28px, 4.2vh, 46px); }
   .thumbprint-cue { width: clamp(66px, 8.2vh, 88px); height: clamp(88px, 10.8vh, 116px); margin-bottom: clamp(8px, 1.2vh, 14px); }
   main.app.idle .thumbprint-cue,
   main.app.charging .thumbprint-cue,
   main.app.building .thumbprint-cue,
-  main.app.charged .thumbprint-cue { margin-top: 0; margin-bottom: clamp(56px, 8.4vh, 92px); }
+  main.app.charged .thumbprint-cue { margin-top: 0; margin-bottom: clamp(72px, 10.4vh, 116px); }
   .moon-hold-orb { width: clamp(46px, 5.7vh, 62px); height: clamp(46px, 5.7vh, 62px); font-size: clamp(1.75rem, 3.6vh, 2.35rem); }
   .thumbprint-label { margin-top: clamp(5px, .8vh, 9px); font-size: clamp(.6rem, 1.14vh, .72rem); }
   .spread { width: min(100%, 660px); gap: 9px; }
