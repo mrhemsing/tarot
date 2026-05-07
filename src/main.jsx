@@ -488,7 +488,7 @@ function App() {
       <ReadingCard item={reading[openCardIndex]} index={openCardIndex} flipped={!detailShowsArt} spotlight={false} fullScreen={true} showArt={detailShowsArt} onToggleArt={() => setDetailShowsArt(value => !value)} onFlip={closeDetail} />
     </div>}
 
-    {reading.length > 0 && <section className="hero compact cast-again"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><span aria-hidden="true">✨</span> Cast Again</button></section>}
+    {reading.length > 0 && <section className="hero compact cast-again"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><span aria-hidden="true">✨</span> Cast again</button></section>}
   </main>;
 }
 
