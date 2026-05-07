@@ -346,7 +346,7 @@ function App() {
     }, 1200));
     timers.current.push(setTimeout(() => {
       setRitualState(state => ['charging', 'building'].includes(state) ? 'hyper' : state);
-      setChargeText('Hyper speed… keep holding until the cards break through.');
+      setChargeText('The wheel is fully charged… keep holding until the cards break through.');
       if (hapticTimer.current) clearInterval(hapticTimer.current);
       hapticTimer.current = setInterval(() => vibrate(18), 150);
     }, 3000));
@@ -383,7 +383,7 @@ function App() {
       if (window.matchMedia?.('(max-width: 820px)').matches) {
         setRevealedCount(0);
         [1, 2, 3].forEach((count, index) => {
-          timers.current.push(setTimeout(() => setRevealedCount(count), 120 + index * 430));
+          timers.current.push(setTimeout(() => setRevealedCount(count), 180 + index * 680));
         });
       } else {
         setRevealedCount(3);
