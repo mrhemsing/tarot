@@ -305,7 +305,7 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
 .detail-stage .tarot-flip.is-fullscreen-detail .tarot-inner { min-height: 100%; }
 .detail-stage .tarot-flip.is-fullscreen-detail .tarot-back { border-radius: 28px; }
 .detail-stage .tarot-flip.is-fullscreen-detail .flip-control { top: clamp(22px, 4vw, 34px); right: clamp(34px, 6vw, 52px); font-size: 1.7rem; line-height: 1; }
-.detail-stage .tarot-flip.is-fullscreen-detail .detail-controls { position: absolute; top: clamp(22px, 4vw, 34px); right: clamp(34px, 6vw, 52px); z-index: 20; display: flex; gap: 5px; align-items: center; }
+.detail-stage .tarot-flip.is-fullscreen-detail .detail-controls { position: absolute; top: clamp(22px, 4vw, 34px); right: clamp(44px, 7vw, 64px); z-index: 20; display: flex; gap: 5px; align-items: center; }
 .detail-stage .tarot-flip.is-fullscreen-detail .detail-controls .flip-control { position: static; top: auto; right: auto; font-size: 1.7rem; line-height: 1; }
 .detail-stage .tarot-flip.is-fullscreen-detail.is-showing-art .art-front { justify-content: center; gap: 14px; padding: 28px 22px 34px; overflow: hidden; background: #10071d; }
 .detail-stage .tarot-flip.is-fullscreen-detail.is-showing-art .art-front .position { display: none; }
@@ -329,7 +329,7 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
   .detail-stage .tarot-flip.is-fullscreen-detail .tarot-inner { min-height: 100dvh; }
   .detail-stage .tarot-flip.is-fullscreen-detail .tarot-back { border-radius: 0; padding: max(32px, env(safe-area-inset-top)) 24px max(32px, env(safe-area-inset-bottom)) 28px; }
   .detail-stage .tarot-flip.is-fullscreen-detail .flip-control { right: max(28px, env(safe-area-inset-right)); }
-  .detail-stage .tarot-flip.is-fullscreen-detail .detail-controls { top: max(28px, env(safe-area-inset-top)); right: max(28px, env(safe-area-inset-right)); gap: 5px; }
+  .detail-stage .tarot-flip.is-fullscreen-detail .detail-controls { top: max(28px, env(safe-area-inset-top)); right: max(42px, env(safe-area-inset-right)); gap: 5px; }
   .detail-stage .tarot-flip.is-fullscreen-detail .detail-controls .flip-control { width: 42px; height: 42px; }
   .detail-stage .tarot-flip.is-fullscreen-detail.is-showing-art .art-front { padding: 28px 22px 34px; }
   .detail-stage .tarot-flip.is-fullscreen-detail .card-scroll { padding: 8px 62px 42px 10px; }
