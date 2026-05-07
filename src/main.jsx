@@ -382,7 +382,7 @@ function App() {
       if (window.matchMedia?.('(max-width: 820px)').matches) {
         setRevealedCount(0);
         [1, 2, 3].forEach((count, index) => {
-          timers.current.push(setTimeout(() => setRevealedCount(count), 180 + index * 680));
+          timers.current.push(setTimeout(() => setRevealedCount(count), 260 + index * 980));
         });
       } else {
         setRevealedCount(3);
