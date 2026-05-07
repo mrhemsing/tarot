@@ -270,6 +270,9 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
   main.app.charging .ritual-status,
   main.app.building .ritual-status,
   main.app.charged .ritual-status { margin-top: auto; margin-bottom: 30px; transform: translateY(-58px); }
+  main.app.charging .ritual-status,
+  main.app.building .ritual-status,
+  main.app.charged .ritual-status { transform: translateY(-36px); }
   main.app.idle .thumbprint-cue,
   main.app.charging .thumbprint-cue,
   main.app.building .thumbprint-cue,
