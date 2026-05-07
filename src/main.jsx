@@ -148,7 +148,7 @@ function getMoonPhase(date = new Date()) {
 
 function TarotWheel({ reading, ritualState, chargeProgress }) {
   const selectedIds = new Set(reading.map(r => r.card.id));
-  const isActiveRitual = ['charging', 'building', 'charged', 'collapse', 'selected', 'revealing', 'returning'].includes(ritualState);
+  const isActiveRitual = ['charging', 'building', 'hyper', 'charged', 'collapse', 'selected', 'revealing', 'returning'].includes(ritualState);
   return <div className={`wheel-wrap ${ritualState} ${isActiveRitual ? 'casting' : ''}`} style={{ '--charge': chargeProgress }} aria-label="Tarot wheel choosing three cards">
     <div className="aura" />
     <div className="site-title" aria-hidden="true"><span>MOONWELL</span><span>TAROT</span></div>
@@ -168,27 +168,46 @@ function TarotWheel({ reading, ritualState, chargeProgress }) {
   </div>;
 }
 
-function cardAnalysis(item) {
+const firstTheme = card => card.meaning.split(/[;,]/)[0].trim();
+
+function spreadSynthesis(reading = []) {
+  if (reading.length < 3) return '';
+  const [past, present, future] = reading;
+  return `Together, the spread moves from ${firstTheme(past.card)} through ${firstTheme(present.card)} and toward ${firstTheme(future.card)}. ${past.card.name} describes the pattern behind the question, ${present.card.name} shows the choice or pressure alive right now, and ${future.card.name} points to the next door opening if this energy is met with clarity rather than fear.`;
+}
+
+function cardAnalysis(item, reading = [], index = 0) {
   const { card, label, prompt } = item;
   const isMajor = card.arcana === 'Major Arcana';
+  const theme = firstTheme(card);
   const positionLens = {
-    Past: 'In the past position, this points to the root condition: the older choice, wound, lesson, or momentum that shaped the question before it reached today.',
-    Present: 'In the present position, this describes the living pressure of the moment: what needs attention, what is asking to be named, and where your agency is strongest right now.',
-    Future: 'In the future position, this is not a fixed prediction. It is the likely doorway opening next if the current energy continues, and the guidance for walking through it cleanly.'
+    Past: `${card.name} in the Past position frames ${theme} as something that has already shaped the question: an earlier choice, ending, lesson, desire, or emotional pattern that still echoes into the present.`,
+    Present: `${card.name} in the Present position brings ${theme} into the current moment. This is the energy asking for attention now, where awareness and agency can actually change the direction of the reading.`,
+    Future: `${card.name} in the Future position turns ${theme} into a possible next chapter rather than a fixed prediction. It shows what may be approaching if the present energy continues, and how to meet it with intention.`
   }[label];
+  const arcLine = index === 0 && reading[1]
+    ? `It sets the opening note for the spread, giving context to the ${reading[1].card.name} that follows in the present.`
+    : index === 1 && reading[0] && reading[2]
+      ? `It stands between ${reading[0].card.name} behind you and ${reading[2].card.name} ahead, making this card the hinge where the story can consciously turn.`
+      : index === 2 && reading[0] && reading[1]
+        ? `It completes the arc that began with ${reading[0].card.name} and moved through ${reading[1].card.name}, showing where the thread may lead next.`
+        : '';
   const scale = isMajor
     ? 'Because this is a Major Arcana card, read it as a larger soul-pattern rather than a minor passing mood. It usually speaks to timing, identity, transformation, or a lesson that wants integration.'
     : `Because this is a ${card.arcana} card, read it through the element of ${card.element}: ${card.arcana === 'Wands' ? 'desire, creative fire, instinct, confidence, and action' : card.arcana === 'Cups' ? 'emotion, relationship, intuition, memory, and tenderness' : card.arcana === 'Swords' ? 'thought, truth, conflict, communication, and mental clarity' : 'the body, money, labor, stability, home, and practical results'}.`;
-  return [
-    `${card.name} carries the theme of ${card.meaning}. ${positionLens}`,
+  const analysis = [
+    `${positionLens} Its core meaning is ${card.meaning}.`,
     scale,
-    `For “${prompt},” the card suggests looking at where ${card.meaning.split(',')[0]} is already active. The message is less about forcing an outcome and more about noticing the pattern clearly enough to choose your next move with intention.`,
+    `For “${prompt},” look at where ${theme} is active in this specific time position. The message is less about forcing an outcome and more about noticing the pattern clearly enough to choose your next move with intention.`,
+    arcLine,
     `A grounded way to work with it: name what is real, release the part that is only fear or habit, then take one small action that honors the card’s strongest medicine.`
-  ];
+  ].filter(Boolean);
+  const synthesis = spreadSynthesis(reading);
+  return synthesis ? [...analysis, `Spread synthesis: ${synthesis}`] : analysis;
 }
 
-function ReadingCard({ item, index, flipped, spotlight, fullScreen, showArt, onFlip, onToggleArt, cardRef, returnVector }) {
-  const analysis = cardAnalysis(item);
+function ReadingCard({ item, reading, index, flipped, spotlight, fullScreen, showArt, onFlip, onToggleArt, cardRef, returnVector }) {
+  const analysis = cardAnalysis(item, reading, index);
   const handleClick = event => {
     if (event.target.closest('.flip-control')) {
       onFlip();
@@ -296,7 +315,7 @@ function App() {
     event.stopPropagation();
     event.currentTarget.setPointerCapture?.(event.pointerId);
     window.getSelection?.().removeAllRanges();
-    if (['charging', 'building', 'charged', 'collapse', 'selected', 'revealing', 'returning'].includes(ritualState)) return;
+    if (['charging', 'building', 'hyper', 'charged', 'collapse', 'selected', 'revealing', 'returning'].includes(ritualState)) return;
     clearTimers();
     vibrate(18);
     holdStart.current = performance.now();
@@ -325,6 +344,12 @@ function App() {
       if (hapticTimer.current) clearInterval(hapticTimer.current);
       hapticTimer.current = setInterval(() => vibrate(12), 300);
     }, 1200));
+    timers.current.push(setTimeout(() => {
+      setRitualState(state => ['charging', 'building'].includes(state) ? 'hyper' : state);
+      setChargeText('Hyper speed… keep holding until the cards break through.');
+      if (hapticTimer.current) clearInterval(hapticTimer.current);
+      hapticTimer.current = setInterval(() => vibrate(18), 150);
+    }, 3000));
     timers.current.push(setTimeout(() => {
       const holdDuration = Math.round(performance.now() - holdStart.current);
       chooseCards(pointerSeed.current.x, pointerSeed.current.y, holdDuration);
@@ -365,7 +390,7 @@ function App() {
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     window.getSelection?.().removeAllRanges();
     if (castStarted.current) return;
-    if (!['charging', 'building'].includes(ritualState)) return;
+    if (!['charging', 'building', 'hyper'].includes(ritualState)) return;
     clearTimers();
     vibrate([10, 35, 10]);
     setRitualState('idle');
@@ -429,7 +454,7 @@ function App() {
     setChargeText('Focus on a question,\nthen press and hold the moon.');
   };
 
-  const isRitualActive = ['charging', 'building', 'charged', 'collapse', 'selected', 'revealing', 'returning'].includes(ritualState);
+  const isRitualActive = ['charging', 'building', 'hyper', 'charged', 'collapse', 'selected', 'revealing', 'returning'].includes(ritualState);
   const moonPhase = useMemo(() => getMoonPhase(), []);
   const flipCard = (index, sourceElement) => {
     if (sourceElement && typeof window !== 'undefined') {
@@ -464,7 +489,7 @@ function App() {
     <a className="average-badge" href="https://b-average.com" target="_blank" rel="noreferrer" aria-label="B Average">B AVERAGE</a>
 
     {spotlightCardIndex !== null && reading[spotlightCardIndex] && <div className="mobile-reveal-stage" aria-hidden="true">
-      <ReadingCard key={`${spotlightCardIndex}-${reading[spotlightCardIndex].card.id}`} item={reading[spotlightCardIndex]} index={spotlightCardIndex} flipped={false} spotlight={true} onFlip={() => {}} />
+      <ReadingCard key={`${spotlightCardIndex}-${reading[spotlightCardIndex].card.id}`} item={reading[spotlightCardIndex]} reading={reading} index={spotlightCardIndex} flipped={false} spotlight={true} onFlip={() => {}} />
     </div>}
 
     <section className="ritual-status" aria-live="polite">
@@ -473,11 +498,11 @@ function App() {
 
     <button className="thumbprint-cue moon-hold" type="button" onPointerDown={beginCharge} onPointerUp={releaseCharge} onPointerCancel={releaseCharge} onPointerLeave={releaseCharge} aria-label={`Hold current moon phase: ${moonPhase.name}`} title={`Current moon phase: ${moonPhase.name}`}>
       <span className="moon-hold-orb" aria-hidden="true">{moonPhase.symbol}</span>
-      <span className="thumbprint-label">{['charging', 'building', 'charged'].includes(ritualState) ? `${Math.round(chargeProgress * 100)}%` : moonPhase.name}</span>
+      <span className="thumbprint-label">{['charging', 'building', 'hyper', 'charged'].includes(ritualState) ? `${Math.round(chargeProgress * 100)}%` : moonPhase.name}</span>
     </button>
 
     {(isRitualActive || revealedCount > 0) && <section className="spread" aria-live="polite">
-      {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} index={i} flipped={false} spotlight={false} cardRef={element => { cardRefs.current[i] = element; }} onFlip={sourceElement => flipCard(i, sourceElement)} /> : <div className="empty-card" key={p.key}><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
+      {positions.map((p, i) => revealedCount > i && reading[i] ? <ReadingCard key={reading[i].key + reading[i].card.id} item={reading[i]} reading={reading} index={i} flipped={false} spotlight={false} cardRef={element => { cardRefs.current[i] = element; }} onFlip={sourceElement => flipCard(i, sourceElement)} /> : <div className="empty-card" key={p.key}><h3>{p.label}</h3><p>{isRitualActive ? 'Waiting for the wheel to choose...' : p.prompt}</p></div>)}
     </section>}
 
     {returnClones.length > 0 && <div className="return-clones" aria-hidden="true">
@@ -487,7 +512,7 @@ function App() {
     </div>}
 
     {openCardIndex !== null && reading[openCardIndex] && <div className={`detail-stage ${isClosingDetail ? 'is-closing' : ''}`} style={{ '--origin-x': `${detailOrigin.x}px`, '--origin-y': `${detailOrigin.y}px`, '--origin-scale': detailOrigin.scale }} role="dialog" aria-modal="true" aria-label={`${reading[openCardIndex].label}: ${reading[openCardIndex].card.name}`}>
-      <ReadingCard item={reading[openCardIndex]} index={openCardIndex} flipped={!detailShowsArt} spotlight={false} fullScreen={true} showArt={detailShowsArt} onToggleArt={() => setDetailShowsArt(value => !value)} onFlip={closeDetail} />
+      <ReadingCard item={reading[openCardIndex]} reading={reading} index={openCardIndex} flipped={!detailShowsArt} spotlight={false} fullScreen={true} showArt={detailShowsArt} onToggleArt={() => setDetailShowsArt(value => !value)} onFlip={closeDetail} />
     </div>}
 
     {reading.length > 0 && <section className="hero compact cast-again"><button onPointerDown={event => event.stopPropagation()} onPointerUp={event => event.stopPropagation()} onClick={resetRitual} disabled={isRitualActive}><span aria-hidden="true">✨</span> Cast again</button></section>}

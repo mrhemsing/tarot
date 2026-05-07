@@ -21,8 +21,8 @@ body::before {
   z-index: -3;
 }
 main { position: relative; width: 100vw; max-width: 100vw; min-width: 0; min-height: 100vh; padding: 0 20px 56px; overflow-x: hidden !important; overflow-y: visible; contain: paint; touch-action: manipulation; cursor: default; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-main.charging, main.building { cursor: grabbing; }
-main.building::after, main.charged::after, main.collapse::after, main.revealing::after { content: ''; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 34%, transparent 18%, rgba(132,246,255,.08) 28%, transparent 38%, rgba(0,0,0,.3) 76%), repeating-radial-gradient(circle at 50% 34%, transparent 0 34px, rgba(132,246,255,.055) 35px 36px, transparent 37px 72px); z-index: 8; mix-blend-mode: screen; opacity: .7; animation: action-vignette .38s linear infinite; }
+main.charging, main.building, main.hyper { cursor: grabbing; }
+main.building::after, main.hyper::after, main.charged::after, main.collapse::after, main.revealing::after { content: ''; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 34%, transparent 18%, rgba(132,246,255,.08) 28%, transparent 38%, rgba(0,0,0,.3) 76%), repeating-radial-gradient(circle at 50% 34%, transparent 0 34px, rgba(132,246,255,.055) 35px 36px, transparent 37px 72px); z-index: 8; mix-blend-mode: screen; opacity: .7; animation: action-vignette .38s linear infinite; }
 .stars { position: fixed; inset: 0; pointer-events: none; z-index: -2; }
 .stars i { position: absolute; display: block; border-radius: 50%; background: #fff3b3; box-shadow: 0 0 12px #ffe9a8; animation: twinkle 4s infinite ease-in-out; }
 .hero { width: min(100%, 850px); max-width: 100%; margin: 0 auto 14px; text-align: center; }
@@ -56,16 +56,17 @@ main.app.idle .average-badge { display: inline-block; }
 .wheel { position: absolute; top: var(--wheel-top-pad); left: 0; right: 0; aspect-ratio: 1; border-radius: 50%; background: url('/tarot-wheel.webp') center / cover no-repeat; box-shadow: inset 0 0 58px rgba(0,0,0,.72), 0 0 70px rgba(255, 207, 126, .18), 0 0 120px rgba(78, 180, 255, .1); animation: spin 42s linear infinite; }
 .charging .aura { animation-duration: calc(12s - var(--charge) * 5s); filter: blur(calc(20px + var(--charge) * 8px)) brightness(calc(1.16 + var(--charge) * .45)); }
 .building .aura { animation-duration: calc(8s - var(--charge) * 3s); filter: blur(calc(24px + var(--charge) * 8px)) brightness(calc(1.35 + var(--charge) * .45)); }
-.charged .aura, .collapse .aura, .selected .aura, .revealing .aura { animation-duration: 4.8s; filter: blur(30px) brightness(1.7); }
+.hyper .aura, .charged .aura, .collapse .aura, .selected .aura, .revealing .aura { animation-duration: 4.8s; filter: blur(30px) brightness(1.7); }
 .charging .wheel { animation-duration: calc(30s - var(--charge) * 22s); box-shadow: inset 0 0 68px rgba(0,0,0,.68), 0 0 calc(70px + var(--charge) * 42px) rgba(255, 207, 126, .24), 0 0 calc(120px + var(--charge) * 70px) rgba(78, 180, 255, .16); }
 .building .wheel { animation-duration: calc(12s - var(--charge) * 8s); box-shadow: inset 0 0 72px rgba(0,0,0,.72), 0 0 calc(90px + var(--charge) * 55px) rgba(255, 207, 126, .3), 0 0 calc(150px + var(--charge) * 90px) rgba(78, 180, 255, .22); }
+.hyper .wheel { animation-duration: .62s; box-shadow: inset 0 0 82px rgba(0,0,0,.76), 0 0 170px rgba(255, 240, 167, .52), 0 0 270px rgba(78, 180, 255, .42), 0 0 210px rgba(198,105,255,.34); filter: saturate(1.35) contrast(1.16); }
 .charged .wheel { animation-duration: 3.2s; box-shadow: inset 0 0 74px rgba(0,0,0,.74), 0 0 126px rgba(255, 207, 126, .34), 0 0 190px rgba(78, 180, 255, .24); }
 .collapse .wheel, .selected .wheel, .revealing .wheel, .done .wheel, .returning .wheel { animation-play-state: paused; }
 
 .card-slot { --radius: clamp(126px, 24vw, 202px); position: absolute; left: 50%; top: 50%; width: 2px; height: clamp(20px, 4.4vw, 35px); margin-left: -1px; margin-top: calc(clamp(20px, 4.4vw, 35px) / -2); border-radius: 999px; transform: rotate(var(--angle)) translateY(calc(var(--radius) * -1)); transform-origin: 50% calc(var(--radius) + 50%); background: linear-gradient(to bottom, transparent, rgba(255, 232, 159, .28), transparent); opacity: .22; box-shadow: 0 0 8px rgba(255, 221, 139, .08); animation: slot-breathe 3.2s ease-in-out infinite var(--delay); transition: opacity .45s ease, transform .65s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease, width .35s ease; }
 .charging .card-slot { opacity: calc(.22 + var(--charge) * .16); filter: brightness(calc(1 + var(--charge) * .45)); }
 .building .card-slot { transform: rotate(var(--angle)) translateY(calc(var(--radius) * -0.965)) rotateX(2deg); opacity: calc(.34 + var(--charge) * .2); filter: brightness(calc(1.1 + var(--charge) * .65)); }
-.charged .card-slot { transform: rotate(var(--angle)) translateY(calc(var(--radius) * -0.94)) rotateX(3deg); opacity: .56; filter: brightness(1.45); }
+.hyper .card-slot, .charged .card-slot { transform: rotate(var(--angle)) translateY(calc(var(--radius) * -0.94)) rotateX(3deg); opacity: .56; filter: brightness(1.45); }
 .collapse .card-slot:not(.selected), .selected .card-slot:not(.selected), .revealing .card-slot:not(.selected), .done .card-slot:not(.selected), .returning .card-slot:not(.selected) { opacity: .08; animation: none; }
 .card-slot.selected { opacity: .98; width: 5px; margin-left: -2.5px; background: linear-gradient(to bottom, transparent, #fff4b8 18%, #84f6ff 52%, #d8a5ff 84%, transparent); box-shadow: 0 0 20px rgba(255, 241, 184, .9), 0 0 38px rgba(132, 246, 255, .5); z-index: 4; }
 .collapse .card-slot.selected { transform: rotate(var(--angle)) translateY(calc(var(--radius) * -0.45)) scaleY(1.35); animation: chosen-hesitate .85s cubic-bezier(.2,.8,.2,1) both; }
@@ -80,7 +81,7 @@ main.app.idle .average-badge { display: inline-block; }
 .ritual-status { position: relative; z-index: 12; min-height: 28px; width: min(100%, 720px); margin: 0 auto 18px; text-align: center; white-space: pre-line; color: #fff0a7; font-family: Cinzel, serif; letter-spacing: .08em; text-transform: uppercase; font-size: .82rem; line-height: 1.75; text-shadow: 0 0 18px rgba(255, 240, 167, .45); }
 .thumbprint-cue { position: relative; z-index: 13; display: grid; place-items: center; width: 112px; height: 132px; margin: -4px auto 14px; padding: 0; border: 0; border-radius: 28px; color: #fff0a7; background: transparent; box-shadow: none; cursor: grab; touch-action: none; transition: opacity .25s ease, transform .25s ease; }
 .thumbprint-cue:hover { transform: none; filter: brightness(1.08); }
-.charging .thumbprint-cue, .building .thumbprint-cue, .charged .thumbprint-cue { cursor: grabbing; }
+.charging .thumbprint-cue, .building .thumbprint-cue, .hyper .thumbprint-cue, .charged .thumbprint-cue { cursor: grabbing; }
 .mobile-reveal-stage { position: fixed; inset: 0; z-index: 120; display: grid; place-items: stretch; pointer-events: none; perspective: 1000px; background: #06030e; }
 .mobile-reveal-stage .tarot-flip.is-spotlight { position: relative; left: auto; top: auto; width: 100vw; max-width: none; min-height: 100dvh; border-radius: 0; pointer-events: none; animation: mobile-card-spotlight 3s cubic-bezier(.16,1,.22,1) both; filter: none; }
 .tarot-flip.is-spotlight { position: relative; z-index: 80; }
@@ -204,22 +205,26 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
   main.app.idle,
   main.app.charging,
   main.app.building,
+  main.app.hyper,
   main.app.charged { height: 100vh; min-height: 100vh; display: flex; flex-direction: column; overflow: hidden !important; padding-top: clamp(12px, 1.7vh, 18px); }
   .wheel-wrap { --wheel-top-pad: clamp(14px, 2.25vh, 24px); --wheel-bottom-pad: clamp(8px, 1.2vh, 14px); --wheel-size: min(calc(100vw - 48px), 57.2vh, 614px); height: calc(var(--wheel-size) + var(--wheel-top-pad) + var(--wheel-bottom-pad)); margin-bottom: clamp(14px, 2.4vh, 26px); padding-bottom: var(--wheel-bottom-pad); }
   main.app.idle .wheel-wrap,
   main.app.charging .wheel-wrap,
   main.app.building .wheel-wrap,
+  main.app.hyper .wheel-wrap,
   main.app.charged .wheel-wrap { flex: 0 0 auto; }
   .site-title { font-size: clamp(2.48rem, min(8.86vw, 10.29vh), 5.89rem); }
   .ritual-status { max-width: min(560px, 70vw); margin-bottom: clamp(8px, 1.15vh, 12px); font-size: clamp(.68rem, 1.32vh, .82rem); }
   main.app.idle .ritual-status,
   main.app.charging .ritual-status,
   main.app.building .ritual-status,
+  main.app.hyper .ritual-status,
   main.app.charged .ritual-status { margin-top: auto; margin-bottom: clamp(28px, 4.2vh, 46px); }
   .thumbprint-cue { width: clamp(66px, 8.2vh, 88px); height: clamp(88px, 10.8vh, 116px); margin-bottom: clamp(8px, 1.2vh, 14px); }
   main.app.idle .thumbprint-cue,
   main.app.charging .thumbprint-cue,
   main.app.building .thumbprint-cue,
+  main.app.hyper .thumbprint-cue,
   main.app.charged .thumbprint-cue { margin-top: 0; margin-bottom: clamp(88px, 12vh, 136px); }
   .moon-hold-orb { width: clamp(46px, 5.7vh, 62px); height: clamp(46px, 5.7vh, 62px); font-size: clamp(1.75rem, 3.6vh, 2.35rem); }
   .thumbprint-label { margin-top: clamp(12px, 1.6vh, 18px); font-size: clamp(.6rem, 1.14vh, .72rem); }
@@ -227,6 +232,7 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
   main.app.idle .spread,
   main.app.charging .spread,
   main.app.building .spread,
+  main.app.hyper .spread,
   main.app.charged .spread { display: none; }
   .empty-card { min-height: 128px; padding: 16px; }
   .tarot-flip:not(.is-fullscreen-detail):not(.is-spotlight) { min-height: 260px; }
@@ -253,23 +259,24 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
   #root::-webkit-scrollbar,
   main::-webkit-scrollbar { width: 0; height: 0; display: none; }
   main { width: 100vw; max-width: 100vw; padding: 0 10px 48px; overflow-x: hidden !important; overflow-y: visible; }
-  main.charging, main.building, main.charged, main.collapse { animation: mobile-impact .22s linear infinite; }
+  main.charging, main.building, main.hyper, main.charged, main.collapse { animation: mobile-impact .22s linear infinite; }
   .spread { grid-template-columns: minmax(0, 1fr); width: calc(100vw - 16px); max-width: calc(100vw - 16px); margin-top: 24px; overflow-x: hidden; overflow-y: visible; }
   main.revealing { contain: none; overflow: visible !important; }
   .revealing .spread { contain: none; overflow: visible; }
-  .charging .spread, .building .spread, .charged .spread, .collapse .spread, .selected .spread, .revealing .spread { filter: brightness(.72) blur(.5px); }
+  .charging .spread, .building .spread, .hyper .spread, .charged .spread, .collapse .spread, .selected .spread, .revealing .spread { filter: brightness(.72) blur(.5px); }
   .charging .wheel-wrap { transform: none; margin-bottom: 12px; z-index: 1; }
   .building .wheel-wrap { transform: none; margin-bottom: 12px; z-index: 1; }
+  .hyper .wheel-wrap { transform: none; margin-bottom: 12px; z-index: 1; filter: saturate(1.3) contrast(1.12); }
   .charged .wheel-wrap { transform: none; margin-bottom: 12px; z-index: 1; filter: saturate(1.2) contrast(1.08); }
   .collapse .wheel-wrap { transform: none; margin-bottom: 12px; z-index: 1; filter: saturate(1.28) contrast(1.1); }
   .selected .wheel-wrap, .revealing .wheel-wrap { transform: scale(1.08); margin-bottom: 12px; }
   .charging .wheel { box-shadow: inset 0 0 58px rgba(0,0,0,.78), 0 0 calc(36px + var(--charge) * 34px) rgba(255,240,167,.58), 0 0 calc(88px + var(--charge) * 62px) rgba(132,246,255,.34), 0 0 calc(130px + var(--charge) * 92px) rgba(198,105,255,.3); }
   .building .wheel { box-shadow: inset 0 0 58px rgba(0,0,0,.78), 0 0 calc(44px + var(--charge) * 40px) rgba(255,240,167,.68), 0 0 calc(108px + var(--charge) * 72px) rgba(132,246,255,.42), 0 0 calc(160px + var(--charge) * 104px) rgba(198,105,255,.36); }
-  .charged .wheel, .collapse .wheel { box-shadow: inset 0 0 58px rgba(0,0,0,.78), 0 0 84px rgba(255,240,167,.78), 0 0 180px rgba(132,246,255,.48), 0 0 264px rgba(198,105,255,.4); }
+  .hyper .wheel, .charged .wheel, .collapse .wheel { box-shadow: inset 0 0 58px rgba(0,0,0,.78), 0 0 84px rgba(255,240,167,.78), 0 0 180px rgba(132,246,255,.48), 0 0 264px rgba(198,105,255,.4); }
   .thumbprint-cue { width: 104px; height: 128px; margin: -4px auto 4px; }
   .moon-hold-orb { width: 82px; height: 82px; font-size: 3.2rem; }
   .thumbprint-label { margin-top: 9px; color: rgba(255,240,167,.84); font-size: .58rem; font-weight: 900; letter-spacing: .16em; text-align: center; text-transform: uppercase; text-shadow: 0 0 10px rgba(255,240,167,.5); }
-  .charging .thumbprint-cue, .building .thumbprint-cue, .charged .thumbprint-cue { opacity: .72; margin-bottom: 4px; }
+  .charging .thumbprint-cue, .building .thumbprint-cue, .hyper .thumbprint-cue, .charged .thumbprint-cue { opacity: .72; margin-bottom: 4px; }
   .collapse .thumbprint-cue, .selected .thumbprint-cue, .revealing .thumbprint-cue, .done .thumbprint-cue, .returning .thumbprint-cue { display: none; }
   .tarot-flip { width: 100%; max-width: 100%; min-height: min(86dvh, 760px); margin-inline: auto; perspective: 900px; }
   .mobile-reveal-stage { position: fixed; inset: 0; z-index: 120; display: grid; place-items: stretch; pointer-events: none; perspective: 1000px; background: #06030e; }
@@ -317,25 +324,31 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
   main.app.idle,
   main.app.charging,
   main.app.building,
+  main.app.hyper,
   main.app.charged { overflow-y: hidden !important; }
   main.app.idle .wheel-wrap,
   main.app.charging .wheel-wrap,
   main.app.building .wheel-wrap,
+  main.app.hyper .wheel-wrap,
   main.app.charged .wheel-wrap { flex: 0 0 auto; margin-bottom: 0; }
   main.app.idle .ritual-status,
   main.app.charging .ritual-status,
   main.app.building .ritual-status,
+  main.app.hyper .ritual-status,
   main.app.charged .ritual-status { margin-top: auto; margin-bottom: 30px; transform: translateY(-58px); }
   main.app.charging .ritual-status,
   main.app.building .ritual-status,
+  main.app.hyper .ritual-status,
   main.app.charged .ritual-status { transform: translateY(-36px); }
   main.app.idle .thumbprint-cue,
   main.app.charging .thumbprint-cue,
   main.app.building .thumbprint-cue,
+  main.app.hyper .thumbprint-cue,
   main.app.charged .thumbprint-cue { margin-top: -42px; margin-bottom: 58px; }
   main.app.idle .spread,
   main.app.charging .spread,
   main.app.building .spread,
+  main.app.hyper .spread,
   main.app.charged .spread,
   main.app.collapse .spread,
   main.app.selected .spread,
@@ -372,6 +385,7 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
   main.app.done .hero.cast-again { margin: 30px auto 0; }
   main.app.charging .average-badge,
   main.app.building .average-badge,
+  main.app.hyper .average-badge,
   main.app.charged .average-badge,
   main.app.done .average-badge { display: inline-block; }
 }
@@ -427,3 +441,4 @@ h3 { font-family: Cinzel, serif; font-size: 1.75rem; margin: 0 0 8px; color: #ff
   .detail-stage .tarot-flip.is-fullscreen-detail.is-showing-art .art-front { padding: 28px 22px 34px; }
   .detail-stage .tarot-flip.is-fullscreen-detail .card-scroll { padding: 8px 62px 42px 10px; }
 }
+
