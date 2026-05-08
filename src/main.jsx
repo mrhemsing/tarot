@@ -369,7 +369,7 @@ function App() {
     setRitualState('revealing');
     setChargeText('Your path is opening…');
 
-    [0, 3000, 6000].forEach((delay, index) => {
+    [1000, 4000, 7000].forEach((delay, index) => {
       timers.current.push(setTimeout(() => {
         setSpotlightCardIndex(index);
         setChargeText(`${positions[index].label} card revealed.`);
@@ -388,7 +388,7 @@ function App() {
       } else {
         setRevealedCount(3);
       }
-    }, 9100));
+    }, 10100));
   };
 
   const releaseCharge = event => {
